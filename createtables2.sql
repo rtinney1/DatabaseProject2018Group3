@@ -70,7 +70,7 @@ CREATE TABLE Users(
 
 	pass VARCHAR(32) NOT NULL,
 
-	phone INTEGER,
+	phone VARCHAR(32) NOT NULL,
 
 	aid INTEGER	NOT NULL,
 
