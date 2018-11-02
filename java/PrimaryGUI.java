@@ -3,6 +3,7 @@ import javax.swing.*;
 import java.awt.event.*;
 import javax.swing.event.*;
 import java.lang.*;
+import java.util.ArrayList;
 
 public class PrimaryGUI
 {
@@ -34,6 +35,8 @@ class MainGUI extends JFrame implements ActionListener/*,
 	JButton search, clear;
 	JLabel eid, actor, title, genre, director, platform;
 	JTextField idField, actorField, titleField, genreField, directorField, platformField;
+	JTextField searchField;
+	JComboBox<String> comboBox;
 	
 	JPanel loginPanel, userPanel, passPanel, adminPanel, fieldPanel, logButtonPanel;
 	JButton login, register;
@@ -108,24 +111,35 @@ class MainGUI extends JFrame implements ActionListener/*,
 		directorField = new JTextField();
 		platformField = new JTextField();
 		
-		 memberFieldPanel = new JPanel(new GridLayout(2, 6));
+		 memberFieldPanel = new JPanel(new GridLayout(1, 3));
 		 memberButtonPanel = new JPanel();//new GridLayout(1,2));
 		 memberPanel = new JPanel(new GridLayout(2,1));
+		 
+		 JLabel searchLabel = new JLabel("Search");
+		 searchField = new JTextField();
+		 
+		 String[] choices = { "Title","Actor", "Genre","Director","Platform"};
+
+		 comboBox = new JComboBox<String>(choices);
 		
 		 memberButtonPanel.add(search);
 		 memberButtonPanel.add(clear);
-		 memberFieldPanel.add(eid);
-		 memberFieldPanel.add(actor);
-		 memberFieldPanel.add(title);
-		 memberFieldPanel.add(genre);
-		 memberFieldPanel.add(director);
-		 memberFieldPanel.add(platform);
-		 memberFieldPanel.add(idField);
-		 memberFieldPanel.add(actorField);
-		 memberFieldPanel.add(titleField);
-		 memberFieldPanel.add(genreField);
-		 memberFieldPanel.add(directorField);
-		 memberFieldPanel.add(platformField);
+		 memberFieldPanel.add(searchLabel);
+		 memberFieldPanel.add(searchField);
+		 memberFieldPanel.add(comboBox);
+		 
+//		 memberFieldPanel.add(eid);
+//		 memberFieldPanel.add(actor);
+//		 memberFieldPanel.add(title);
+//		 memberFieldPanel.add(genre);
+//		 memberFieldPanel.add(director);
+//		 memberFieldPanel.add(platform);
+//		 memberFieldPanel.add(idField);
+//		 memberFieldPanel.add(actorField);
+//		 memberFieldPanel.add(titleField);
+//		 memberFieldPanel.add(genreField);
+//		 memberFieldPanel.add(directorField);
+//		 memberFieldPanel.add(platformField);
 		 memberPanel.add(memberFieldPanel);
 		 memberPanel.add(memberButtonPanel);
 		 
@@ -137,14 +151,41 @@ class MainGUI extends JFrame implements ActionListener/*,
 	{
 		if (e.getActionCommand().equals("REGISTER"))
 		{
+			
 			doRegister();
 		}//end resgister conditional
 
 		else if (e.getActionCommand().equals("LOGIN"))
 		{
-			doLogin();
+			String username = userField.getText().trim();
+			String password = new String(passField.getPassword());
+			boolean isSuccessful = attemptLogin(username, password);
+			if (isSuccessful)
+				doLogin();
+			else{
+				//TODO: Display some sort of error on login page
+				System.out.println("Failed login.");
+			}
+				
 		}//end logon conditional
+		
+		else if (e.getActionCommand().equals("SEARCH")){
+			//JTextField idField, actorField, titleField, genreField, directorField, platformField;
+			
+			String searchTerm = searchField.getText().trim();
+			String searchBy = comboBox.getSelectedItem().toString().toUpperCase();
+			
+			
+			Entertainment entertainment = new Entertainment();
+			ArrayList<Entertainment> eList = entertainment.searchBy(searchTerm, searchBy, null);
+			
+			eList.forEach((ent) -> {
+				System.out.println(ent.title);
+			});
+			
+		}
 	}//end actionPerformed() method
+	
 	//-----------------------------------------------------------------------------
 	public void doLogin()
 	{
@@ -178,4 +219,16 @@ class MainGUI extends JFrame implements ActionListener/*,
 
 		setVisible(true);
 	}  // end setupMainFrame()
+	
+	private boolean attemptLogin(String email, String password) {
+		User user = new User();
+		try {
+			user.login(email, password);
+			return true;
+		} catch (LoginException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+	}
 }//end MainGUI class
