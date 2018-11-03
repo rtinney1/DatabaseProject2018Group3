@@ -2,7 +2,12 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 import javax.swing.event.*;
+import javax.swing.table.DefaultTableModel;
+
 import java.lang.*;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class PrimaryGUI
@@ -30,13 +35,16 @@ class MainGUI extends JFrame implements ActionListener/*,
 	JScrollPane scroller;
 	JTable tableViewer;
 	
-	
-	JPanel memberFieldPanel, memberButtonPanel, memberPanel;
+	JPanel memberFieldPanel, memberButtonPanel, memberPanel, memberDataPanel;
 	JButton search, clear;
 	JLabel eid, actor, title, genre, director, platform;
 	JTextField idField, actorField, titleField, genreField, directorField, platformField;
 	JTextField searchField;
+	
+	JRadioButton awardWinningRadioButton;
 	JComboBox<String> comboBox;
+	JScrollPane sPane;
+	JTable dataTable;
 	
 	JPanel loginPanel, userPanel, passPanel, adminPanel, fieldPanel, logButtonPanel;
 	JButton login, register;
@@ -83,12 +91,6 @@ class MainGUI extends JFrame implements ActionListener/*,
 		loginPanel.add(fieldPanel);
 		loginPanel.add(logButtonPanel);
 		
-		cp = getContentPane();
-		cp.add(Box.createRigidArea(new Dimension(50,0)), BorderLayout.WEST);
-		cp.add(Box.createRigidArea(new Dimension(50,0)), BorderLayout.EAST);
-		cp.add(Box.createRigidArea(new Dimension(0,25)), BorderLayout.NORTH);
-		cp.add(loginPanel, BorderLayout.CENTER);
-		
 		search = new JButton("Search");
 		search.setActionCommand("SEARCH");
 		search.addActionListener(this);
@@ -111,39 +113,49 @@ class MainGUI extends JFrame implements ActionListener/*,
 		directorField = new JTextField();
 		platformField = new JTextField();
 		
-		 memberFieldPanel = new JPanel(new GridLayout(1, 3));
-		 memberButtonPanel = new JPanel();//new GridLayout(1,2));
-		 memberPanel = new JPanel(new GridLayout(2,1));
+		memberFieldPanel = new JPanel(new GridLayout(1, 4));
+		memberButtonPanel = new JPanel();//new GridLayout(1,2));
+		memberDataPanel = new JPanel(new BorderLayout());
+		memberPanel = new JPanel(new BorderLayout());
 		 
-		 JLabel searchLabel = new JLabel("Search");
-		 searchField = new JTextField();
+		JLabel searchLabel = new JLabel("Search");
+		searchField = new JTextField();
 		 
-		 String[] choices = { "Title","Actor", "Genre","Director","Platform"};
-
-		 comboBox = new JComboBox<String>(choices);
+		String[] choices = { "Title","Actor", "Genre","Director","Platform"};
 		
-		 memberButtonPanel.add(search);
-		 memberButtonPanel.add(clear);
-		 memberFieldPanel.add(searchLabel);
-		 memberFieldPanel.add(searchField);
-		 memberFieldPanel.add(comboBox);
+		comboBox = new JComboBox<String>(choices);
 		 
-//		 memberFieldPanel.add(eid);
-//		 memberFieldPanel.add(actor);
-//		 memberFieldPanel.add(title);
-//		 memberFieldPanel.add(genre);
-//		 memberFieldPanel.add(director);
-//		 memberFieldPanel.add(platform);
-//		 memberFieldPanel.add(idField);
-//		 memberFieldPanel.add(actorField);
-//		 memberFieldPanel.add(titleField);
-//		 memberFieldPanel.add(genreField);
-//		 memberFieldPanel.add(directorField);
-//		 memberFieldPanel.add(platformField);
-		 memberPanel.add(memberFieldPanel);
-		 memberPanel.add(memberButtonPanel);
 		 
+		dataTable = new JTable(new DefaultTableModel());
+		 
+		awardWinningRadioButton = new JRadioButton("Award Winners Only");
+		 
+		sPane = new JScrollPane(dataTable);
+		
+		memberFieldPanel.setPreferredSize(new Dimension(500, 80));
+		memberButtonPanel.setPreferredSize(new Dimension(500, 40));
+		memberDataPanel.setPreferredSize(new Dimension(500, 200));
+		
+		
+		memberButtonPanel.add(search);
+		memberButtonPanel.add(clear);
+		memberFieldPanel.add(searchLabel);
+		memberFieldPanel.add(searchField);
+		memberFieldPanel.add(comboBox);
+		memberFieldPanel.add(awardWinningRadioButton);
+		memberDataPanel.add(sPane, BorderLayout.CENTER);
+		 
+		memberPanel.add(memberFieldPanel, BorderLayout.NORTH);
+		memberPanel.add(memberButtonPanel, BorderLayout.SOUTH);
+		memberPanel.add(memberDataPanel, BorderLayout.CENTER);
+		 
+		cp = getContentPane();
+		cp.add(Box.createRigidArea(new Dimension(50,0)), BorderLayout.WEST);
+		cp.add(Box.createRigidArea(new Dimension(50,0)), BorderLayout.EAST);
+		cp.add(Box.createRigidArea(new Dimension(0,25)), BorderLayout.NORTH);
+		cp.add(loginPanel, BorderLayout.CENTER);
 		setupMainFrame();
+		
 	}//end constructor
 	
 	//-----------------------------------------------------------------------------
@@ -170,19 +182,18 @@ class MainGUI extends JFrame implements ActionListener/*,
 		}//end logon conditional
 		
 		else if (e.getActionCommand().equals("SEARCH")){
-			//JTextField idField, actorField, titleField, genreField, directorField, platformField;
-			
 			String searchTerm = searchField.getText().trim();
 			String searchBy = comboBox.getSelectedItem().toString().toUpperCase();
 			
-			
 			Entertainment entertainment = new Entertainment();
-			ArrayList<Entertainment> eList = entertainment.searchBy(searchTerm, searchBy, null);
+			DefaultTableModel tableModel = entertainment.searchBy(searchTerm, searchBy, null, awardWinningRadioButton.isSelected());
 			
-			eList.forEach((ent) -> {
-				System.out.println(ent.title);
-			});
-			
+			memberDataPanel.removeAll();
+			JScrollPane newPane = new JScrollPane(new JTable(tableModel));
+			newPane.setPreferredSize(new Dimension(500, 200));
+			memberDataPanel.add(newPane, BorderLayout.CENTER);
+			memberDataPanel.revalidate();
+			memberDataPanel.repaint();
 		}
 	}//end actionPerformed() method
 	
@@ -192,13 +203,13 @@ class MainGUI extends JFrame implements ActionListener/*,
 		setVisible(false);
 		setSize((d.width/3)+300, (d.height/3)+250);
 		setLocationRelativeTo(null);
-	   cp.removeAll();
-	   //cp.add(Box.createRigidArea(new Dimension(30,0)), BorderLayout.WEST);
-	   //cp.add(Box.createRigidArea(new Dimension(30,0)), BorderLayout.EAST);
-	   cp.add(memberPanel, BorderLayout.NORTH);
-	   //cp.add(client.secondaryButtonPanel, BorderLayout.SOUTH);
-	   setTitle("Movies-R-Us");
-	   setVisible(true);
+		cp.removeAll();
+		//cp.add(Box.createRigidArea(new Dimension(30,0)), BorderLayout.WEST);
+		//cp.add(Box.createRigidArea(new Dimension(30,0)), BorderLayout.EAST);
+		cp.add(memberPanel, BorderLayout.NORTH);
+		//cp.add(client.secondaryButtonPanel, BorderLayout.SOUTH);
+		setTitle("Movies-R-Us");
+		setVisible(true);
 	}//end doLogin() method
 	//-----------------------------------------------------------------------------
 	public void doRegister()

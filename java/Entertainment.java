@@ -1,11 +1,13 @@
-package application;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Vector;
 import java.util.regex.Pattern;
+
+import javax.swing.table.DefaultTableModel;
 
 public class Entertainment 
 {
@@ -726,11 +728,12 @@ public class Entertainment
 		}
 	}
 	
-	public ArrayList<Entertainment> searchBy(String searchTerm, String searchBy, String userEmail)
+	public DefaultTableModel searchBy(String searchTerm, String searchBy, String userEmail, boolean awardWinners)
 	{
 		ArrayList<Entertainment> list = new ArrayList<Entertainment>();
 		Statement statement;
-		ResultSet resultSet;
+		ResultSet resultSet = null;
+		
 		
 		connection = connect.connect();
 		
@@ -738,53 +741,55 @@ public class Entertainment
 		{
 			statement = connection.createStatement();
 			
-			if(searchTerm.equals("ALL"))
-				list = getArrayListOfAllItems();
+			if(searchTerm.equals("ALL")){
+				resultSet = statement.executeQuery("SELECT * FROM Entertainment");
+			}
+				//list = getArrayListOfAllItems();
 			else if(searchTerm.equals("MOVIES_ONLY"))
 			{
 				resultSet = statement.executeQuery("SELECT * FROM Entertainment E WHERE platform ='DVD' OR platform = 'BlueRay'");
 				
-				while(resultSet.next())
-				{
-					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
-							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
-							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
-				}
+//				while(resultSet.next())
+//				{
+//					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
+//							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
+//							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
+//				}
 			}
 			else if(searchTerm.equals("GAMES_ONLY"))
 			{
 				resultSet = statement.executeQuery("SELECT * FROM Entertainment E WHERE platform <>'DVD' AND platform <> 'BlueRay'");
 				
-				while(resultSet.next())
-				{
-					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
-							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
-							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
-				}
+//				while(resultSet.next())
+//				{
+//					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
+//							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
+//							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
+//				}
 			}
 			else if(searchTerm.equals("AWARDS_MOVIES"))
 			{
 				resultSet = statement.executeQuery("SELECT * FROM Entertainment E "
 						+ "WHERE awards_won > 0 AND platform ='DVD' OR platform = 'BlueRay'");
 				
-				while(resultSet.next())
-				{
-					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
-							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
-							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
-				}
+//				while(resultSet.next())
+//				{
+//					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
+//							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
+//							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
+//				}
 			}
 			else if(searchTerm.equals("AWARDS_GAMES"))
 			{
 				resultSet = statement.executeQuery("SELECT * FROM Entertainment E "
 						+ "WHERE awards_won > 0 AND platform <>'DVD' AND platform <> 'BlueRay'");
 				
-				while(resultSet.next())
-				{
-					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
-							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
-							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
-				}
+//				while(resultSet.next())
+//				{
+//					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
+//							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
+//							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
+//				}
 			}
 			else if(searchTerm.equals("MOVIE_NO_CHECK"))
 			{
@@ -793,12 +798,12 @@ public class Entertainment
 						+ "INNER JOIN Users U ON R.user_email = U.user_email "
 						+ "WHERE R.user_email = '" + userEmail + "' AND E.platform = 'DVD' OR E.platform = 'BlueRay'");
 				
-				while(resultSet.next())
-				{
-					list.add(new Entertainment((int)resultSet.getObject(6), (String)resultSet.getObject(7), (String)resultSet.getObject(8), 
-							(String)resultSet.getObject(9), (int)resultSet.getObject(10), (String)resultSet.getObject(11), 
-							(int)resultSet.getObject(12), (String)resultSet.getObject(13), (String)resultSet.getObject(14)));
-				}
+//				while(resultSet.next())
+//				{
+//					list.add(new Entertainment((int)resultSet.getObject(6), (String)resultSet.getObject(7), (String)resultSet.getObject(8), 
+//							(String)resultSet.getObject(9), (int)resultSet.getObject(10), (String)resultSet.getObject(11), 
+//							(int)resultSet.getObject(12), (String)resultSet.getObject(13), (String)resultSet.getObject(14)));
+//				}
 			}
 			else if(searchTerm.equals("GAME_NO_CHECK"))
 			{
@@ -807,88 +812,95 @@ public class Entertainment
 						+ "INNER JOIN Users U ON R.user_email = U.user_email "
 						+ "WHERE R.user_email = '" + userEmail + "' AND E.platform <> 'DVD' AND E.platform <> 'BlueRay'");
 				
-				while(resultSet.next())
-				{
-					list.add(new Entertainment((int)resultSet.getObject(6), (String)resultSet.getObject(7), (String)resultSet.getObject(8), 
-							(String)resultSet.getObject(9), (int)resultSet.getObject(10), (String)resultSet.getObject(11), 
-							(int)resultSet.getObject(12), (String)resultSet.getObject(13), (String)resultSet.getObject(14)));
-				}
+//				while(resultSet.next())
+//				{
+//					list.add(new Entertainment((int)resultSet.getObject(6), (String)resultSet.getObject(7), (String)resultSet.getObject(8), 
+//							(String)resultSet.getObject(9), (int)resultSet.getObject(10), (String)resultSet.getObject(11), 
+//							(int)resultSet.getObject(12), (String)resultSet.getObject(13), (String)resultSet.getObject(14)));
+//				}
 			}
-			else if(searchBy.equals("Actor"))
+			else if(searchBy.equals("ACTOR"))
 			{
 				System.out.println(searchTerm);
-				resultSet = statement.executeQuery("SELECT * FROM worked_in W "
+				resultSet = statement.executeQuery("SELECT "
+						+ "E.eid, E.title, E.release_date, E.genre, E.num_in_stock, E.awards_won, E.sequal_id, E.platform, E.version "
+						+ "FROM worked_in W "
 						+ "INNER JOIN Entertainment E ON W.eid = E.eid "
 						+ "INNER JOIN Cast_Member C ON W.cid = C.cid "
-						+ "WHERE C.name = '" + searchTerm + "'");
+						+ "WHERE C.name LIKE '" + searchTerm + "'");
 				
-				while(resultSet.next())
-				{
-					list.add(new Entertainment((int)resultSet.getObject(3), (String)resultSet.getObject(4), (String)resultSet.getObject(5), 
-							(String)resultSet.getObject(6), (int)resultSet.getObject(7), (String)resultSet.getObject(8), 
-							(int)resultSet.getObject(9), (String)resultSet.getObject(10), (String)resultSet.getObject(11)));
-				}
+//				while(resultSet.next())
+//				{
+//					list.add(new Entertainment((int)resultSet.getObject(3), (String)resultSet.getObject(4), (String)resultSet.getObject(5), 
+//							(String)resultSet.getObject(6), (int)resultSet.getObject(7), (String)resultSet.getObject(8), 
+//							(int)resultSet.getObject(9), (String)resultSet.getObject(10), (String)resultSet.getObject(11)));
+//				}
 			}
-			else if(searchBy.equals("Director"))
+			else if(searchBy.equals("DIRECTOR"))
 			{
 				System.out.println(searchTerm);
-				resultSet = statement.executeQuery("SELECT * FROM worked_in W "
+				resultSet = statement.executeQuery("SELECT "
+						+ "E.eid, E.title, E.release_date, E.genre, E.num_in_stock, E.awards_won, E.sequal_id, E.platform, E.version "
+						+ "FROM worked_in W "
 						+ "INNER JOIN Entertainment E ON W.eid = E.eid "
 						+ "INNER JOIN Cast_Member C ON W.cid = C.cid "
-						+ "WHERE C.name = '" + searchTerm + "' AND C.is_director = 1");
+						+ "WHERE C.name LIKE '" + searchTerm + "' AND C.is_director = 1");
 				
-				while(resultSet.next())
-				{
-					list.add(new Entertainment((int)resultSet.getObject(3), (String)resultSet.getObject(4), (String)resultSet.getObject(5), 
-							(String)resultSet.getObject(6), (int)resultSet.getObject(7), (String)resultSet.getObject(8), 
-							(int)resultSet.getObject(9), (String)resultSet.getObject(10), (String)resultSet.getObject(11)));
-				}
+//				while(resultSet.next())
+//				{
+//					list.add(new Entertainment((int)resultSet.getObject(3), (String)resultSet.getObject(4), (String)resultSet.getObject(5), 
+//							(String)resultSet.getObject(6), (int)resultSet.getObject(7), (String)resultSet.getObject(8), 
+//							(int)resultSet.getObject(9), (String)resultSet.getObject(10), (String)resultSet.getObject(11)));
+//				}
 			}
-			else if(searchBy.equals("Genre"))
-			{
-				resultSet = statement.executeQuery("SELECT * FROM Entertainment E WHERE genre ='" + searchTerm + "'");
-				
-				while(resultSet.next())
-				{
-					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
-							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
-							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
-				}
+
+			
+			else if (searchBy.equals("TITLE") || searchBy.equals("PLATFORM") || searchBy.equals("GENRE")){
+				if (awardWinners)
+					resultSet = statement.executeQuery("SELECT * FROM Entertainment E WHERE " + searchBy.toLowerCase() + " LIKE '" + searchTerm + "' AND E.awards_won > 0");
+				else
+					resultSet = statement.executeQuery("SELECT * FROM Entertainment E WHERE " + searchBy.toLowerCase() + " LIKE '" + searchTerm + "'");
 			}
-			else if(searchBy.equals("Platform"))
-			{
-				resultSet = statement.executeQuery("SELECT * FROM Entertainment E WHERE platform ='" + searchTerm + "'");
-				
-				while(resultSet.next())
-				{
-					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
-							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
-							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
-				}
-			}
-			else if(searchBy.equals("Keywords"))
-			{
-				resultSet = statement.executeQuery("SELECT * FROM Entertainment E WHERE title LIKE '%" + searchTerm + "%'");
-				
-				while(resultSet.next())
-				{
-					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
-							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
-							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
-				}
-			}
+			
+			DefaultTableModel tableModel = buildTableModel(resultSet);
 			
 			statement.close();
 			resultSet.close();
 			connect.disconnect(connection);
-			return list;
+			return tableModel;
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 			connect.disconnect(connection);
-			return list;
+			return null;
 		}
+	}
+	
+	public static DefaultTableModel buildTableModel(ResultSet rs)
+	        throws SQLException {
+
+	    ResultSetMetaData metaData = rs.getMetaData();
+
+	    // names of columns
+	    Vector<String> columnNames = new Vector<String>();
+	    int columnCount = metaData.getColumnCount();
+	    for (int column = 1; column <= columnCount; column++) {
+	        columnNames.add(metaData.getColumnName(column));
+	    }
+
+	    // data of the table
+	    Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+	    while (rs.next()) {
+	        Vector<Object> vector = new Vector<Object>();
+	        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+	            vector.add(rs.getObject(columnIndex));
+	        }
+	        data.add(vector);
+	    }
+
+	    return new DefaultTableModel(data, columnNames);
+
 	}
 	
 	public ArrayList<Entertainment> getArrayListOfAllItems()
