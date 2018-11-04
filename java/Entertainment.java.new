@@ -1131,31 +1131,31 @@ public class Entertainment
 			}
 			else if(searchTerm.equals("MOVIE_NO_CHECK"))
 			{
-				resultSet = statement.executeQuery("SELECT * FROM rent_history R "
-						+ "INNER JOIN Entertainment E ON R.eid = E.eid "
-						+ "INNER JOIN Users U ON R.user_email = U.user_email "
-						+ "WHERE R.user_email = '" + userEmail + "' AND E.platform = 'DVD' OR E.platform = 'BlueRay'");
+				resultSet = statement.executeQuery("SELECT * FROM Entertainment E  "
+						+ "WHERE (E.platform = 'DVD' OR E.platform = 'BlueRay') AND E.eid NOT IN" + 
+						"(SELECT eid FROM Rent_History " + 
+						"WHERE user_email = '" + userEmail + "')");
 				
 				while(resultSet.next())
 				{
-					list.add(new Entertainment((int)resultSet.getObject(6), (String)resultSet.getObject(7), (String)resultSet.getObject(8), 
-							(String)resultSet.getObject(9), (int)resultSet.getObject(10), (String)resultSet.getObject(11), 
-							(int)resultSet.getObject(12), (String)resultSet.getObject(13), (String)resultSet.getObject(14)));
+					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
+							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
+							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
 				}
 				resultSet.close();
 			}
 			else if(searchTerm.equals("GAME_NO_CHECK"))
 			{
-				resultSet = statement.executeQuery("SELECT * FROM rent_history R "
-						+ "INNER JOIN Entertainment E ON R.eid = E.eid "
-						+ "INNER JOIN Users U ON R.user_email = U.user_email "
-						+ "WHERE R.user_email = '" + userEmail + "' AND E.platform <> 'DVD' AND E.platform <> 'BlueRay'");
+				resultSet = statement.executeQuery("SELECT * FROM Entertainment E  "
+						+ "WHERE (E.platform <> 'DVD' OR E.platform <> 'BlueRay') AND E.eid NOT IN" + 
+						"(SELECT eid FROM Rent_History " + 
+						"WHERE user_email = '" + userEmail + "')");
 				
 				while(resultSet.next())
 				{
-					list.add(new Entertainment((int)resultSet.getObject(6), (String)resultSet.getObject(7), (String)resultSet.getObject(8), 
-							(String)resultSet.getObject(9), (int)resultSet.getObject(10), (String)resultSet.getObject(11), 
-							(int)resultSet.getObject(12), (String)resultSet.getObject(13), (String)resultSet.getObject(14)));
+					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
+							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
+							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
 				}
 				resultSet.close();
 			}
