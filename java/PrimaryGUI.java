@@ -24,7 +24,7 @@ public class PrimaryGUI
 
 //-----------------------------------------------------------------------------
 
-class MainGUI extends JFrame implements ActionListener/*,
+class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 																		ListSelectionListener,
 																		MouseListener*/
 {
@@ -36,7 +36,7 @@ class MainGUI extends JFrame implements ActionListener/*,
 	JTable tableViewer;
 	
 	JPanel memberFieldPanel, memberButtonPanel, memberPanel, memberDataPanel;
-	JButton search, clear;
+	JButton search, clear, rentButton, sequalButton, userHistoryButton;
 	JLabel eid, actor, title, genre, director, platform;
 	JTextField idField, actorField, titleField, genreField, directorField, platformField;
 	JTextField searchField;
@@ -51,6 +51,8 @@ class MainGUI extends JFrame implements ActionListener/*,
 	JLabel userLabel, passLabel;
 	JTextField userField;
 	JPasswordField passField;
+	
+	User currentUser;
 	//-----------------------------------------------------------------------------
 	public MainGUI()
 	{
@@ -99,6 +101,19 @@ class MainGUI extends JFrame implements ActionListener/*,
 		clear.setActionCommand("CLEAR");
 		clear.addActionListener(this);
 		
+		rentButton = new JButton("Rent");
+		rentButton.setActionCommand("RENT");
+		rentButton.addActionListener(this);
+		
+		sequalButton = new JButton("Get Sequals");
+		sequalButton.setActionCommand("SEQUALS");
+		sequalButton.addActionListener(this);
+		sequalButton.setEnabled(false);
+		
+		userHistoryButton = new JButton("My History");
+		userHistoryButton.setActionCommand("USER_HISTORY");
+		userHistoryButton.addActionListener(this);
+		
 		eid = new JLabel("ID Number:");
 		actor = new JLabel("Actor/Actress:");
 		title = new JLabel("Title:");
@@ -114,7 +129,7 @@ class MainGUI extends JFrame implements ActionListener/*,
 		platformField = new JTextField();
 		
 		memberFieldPanel = new JPanel(new GridLayout(1, 4));
-		memberButtonPanel = new JPanel();//new GridLayout(1,2));
+		memberButtonPanel = new JPanel(new GridLayout(1, 5));//new GridLayout(1,2));
 		memberDataPanel = new JPanel(new BorderLayout());
 		memberPanel = new JPanel(new BorderLayout());
 		 
@@ -139,6 +154,9 @@ class MainGUI extends JFrame implements ActionListener/*,
 		
 		memberButtonPanel.add(search);
 		memberButtonPanel.add(clear);
+		memberButtonPanel.add(sequalButton);
+		memberButtonPanel.add(rentButton);
+		memberButtonPanel.add(userHistoryButton);
 		memberFieldPanel.add(searchLabel);
 		memberFieldPanel.add(searchField);
 		memberFieldPanel.add(comboBox);
@@ -187,15 +205,56 @@ class MainGUI extends JFrame implements ActionListener/*,
 			
 			Entertainment entertainment = new Entertainment();
 			DefaultTableModel tableModel = entertainment.searchBy(searchTerm, searchBy, null, awardWinningRadioButton.isSelected());
-			
+
 			memberDataPanel.removeAll();
-			JScrollPane newPane = new JScrollPane(new JTable(tableModel));
+			dataTable = new JTable(tableModel);
+			dataTable.getSelectionModel().addListSelectionListener(this);
+			JScrollPane newPane = new JScrollPane(dataTable);
 			newPane.setPreferredSize(new Dimension(500, 200));
 			memberDataPanel.add(newPane, BorderLayout.CENTER);
 			memberDataPanel.revalidate();
 			memberDataPanel.repaint();
 		}
+		
+		else if (e.getActionCommand().equals("SEQUALS")){
+			String eid = dataTable.getValueAt(dataTable.getSelectedRow(), 0).toString();
+			System.out.println("Find sequals with this EID: " + eid);
+			
+			Entertainment entertainment = new Entertainment();
+			DefaultTableModel tableModel = entertainment.findAllSequalsForEid(Integer.valueOf(eid));
+			
+			memberDataPanel.removeAll();
+			dataTable = new JTable(tableModel);
+			dataTable.getSelectionModel().addListSelectionListener(this);
+			JScrollPane newPane = new JScrollPane(dataTable);
+			newPane.setPreferredSize(new Dimension(500, 200));
+			memberDataPanel.add(newPane, BorderLayout.CENTER);
+			memberDataPanel.revalidate();
+			memberDataPanel.repaint();
+		}
+		
+		else if (e.getActionCommand().equals("USER_HISTORY")){
+			DefaultTableModel tableModel = currentUser.getRentHistory();
+			
+			JTable rentHistoryTable = new JTable(tableModel);
+			JScrollPane scrollPane = new JScrollPane(rentHistoryTable);
+			scrollPane.setPreferredSize(new Dimension(600, 200));
+			
+			JOptionPane.showMessageDialog(this, scrollPane, currentUser.getName() + "'s Rent History", JOptionPane.INFORMATION_MESSAGE);
+		}
 	}//end actionPerformed() method
+	
+	@Override
+	public void valueChanged(ListSelectionEvent arg0) {
+		System.out.println(dataTable.getValueAt(dataTable.getSelectedRow(), dataTable.getSelectedColumn()).toString());
+		SwingUtilities.invokeLater( 
+	        new Runnable() {
+	            public void run() {
+	                sequalButton.setEnabled(true);
+	            }
+	        }
+	    );
+	}
 	
 	//-----------------------------------------------------------------------------
 	public void doLogin()
@@ -232,9 +291,9 @@ class MainGUI extends JFrame implements ActionListener/*,
 	}  // end setupMainFrame()
 	
 	private boolean attemptLogin(String email, String password) {
-		User user = new User();
+		currentUser = new User();
 		try {
-			user.login(email, password);
+			currentUser.login(email, password);
 			return true;
 		} catch (LoginException e) {
 			// TODO Auto-generated catch block
@@ -242,4 +301,5 @@ class MainGUI extends JFrame implements ActionListener/*,
 			return false;
 		}
 	}
+
 }//end MainGUI class

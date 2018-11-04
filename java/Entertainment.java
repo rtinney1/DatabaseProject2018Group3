@@ -360,28 +360,125 @@ public class Entertainment
 		return type;
 	}
 	
-	public Entertainment getSequal()
-	{
-		Entertainment sequal;
-		
-		sequal = null;
-		
-		if(sequalID == 0)
+	/*
+	 * Input: entertainment ID (for which the sequels are desired)
+	 * Output: a DefaultTableModel containing all the Entertainment rows
+	 * that are sequels to the given EID
+	 */
+	public DefaultTableModel findAllSequalsForEid(int eid){
+
+		if(eid == 0){
+			return null;
+		}
+		else
 		{
-			return sequal;
+			Statement statement;
+			connection = connect.connect();
+			
+			// Building an ArrayList of Sequal Ids Branched from the given Movie/Game EID
+			ArrayList<Integer> sequalIdList = new ArrayList<Integer>();
+			Entertainment temp;
+			try {
+				temp = new Entertainment(eid);
+				while (temp.getSequalID() != 0){
+					sequalIdList.add(temp.getSequalID());
+					temp = new Entertainment(temp.getSequalID());
+				}
+			} catch (GetEntertainmentException e1) {
+				System.out.println("ERROR: Failed to generate a list of sequals for a given EID.");
+				e1.printStackTrace();
+				return null;
+			}
+			
+			
+			if (sequalIdList.size() > 0){
+				try
+				{
+					statement = connection.createStatement();
+					
+					// Building the select query to include all sequel id checks
+					String query = "SELECT * FROM Entertainment E WHERE ";
+					int count = 0;
+					
+					if (sequalIdList.size() > 1)
+						while (count < sequalIdList.size()-1) {
+							query = query + "E.eid = " + sequalIdList.get(count) + " OR ";
+							count++;
+						}
+					
+					query = query + "E.eid = " + sequalIdList.get(count);
+					
+					ResultSet resultSet = statement.executeQuery(query);
+					
+					DefaultTableModel tableModel = TableModelUtil.buildTableModel(resultSet);
+					
+					statement.close();
+					resultSet.close();
+					connect.disconnect(connection);
+					return tableModel;
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+					connect.disconnect(connection);
+					return null;
+				}
+			}
+			
+		}
+		
+		return null;
+	}
+	
+	public ArrayList<Entertainment> getSequal()
+	{
+		ArrayList<Entertainment> list = new ArrayList<Entertainment>();
+		Entertainment sequal;
+		boolean sequalExists = true;
+		int id = getSequalID();
+		
+		Statement statement;
+		connection = connect.connect();
+		
+		System.out.println("SequalID: " + id);
+		
+		if(id == 0)
+		{
+			return list;
 		}
 		else
 		{
 			try
 			{
-				sequal = new Entertainment(sequalID);
+				statement = connection.createStatement();
+				
+				while(sequalExists)
+				{
+					sequal = new Entertainment(id);
+					System.out.println("Get title in getSequal()");
+					System.out.println(sequal.getTitle());
+					list.add(sequal);
+					
+					
+					ResultSet resultSet = statement.executeQuery("SELECT sequal_id FROM Entertainment E "
+							+ "WHERE E.eid = " + sequal.getSequalID());
+					
+					if(resultSet.next())
+						id = (int)resultSet.getObject(1);
+					else
+						sequalExists = false;
+					
+					System.out.println(id);
+				}
+				
+				return list;
 			}
 			catch(Exception e)
 			{
 				e.printStackTrace();
+				connect.disconnect(connection);
+				return list;
 			}
-			
-			return sequal;
 		}
 	}
 	
@@ -862,7 +959,7 @@ public class Entertainment
 					resultSet = statement.executeQuery("SELECT * FROM Entertainment E WHERE " + searchBy.toLowerCase() + " LIKE '" + searchTerm + "'");
 			}
 			
-			DefaultTableModel tableModel = buildTableModel(resultSet);
+			DefaultTableModel tableModel = TableModelUtil.buildTableModel(resultSet);
 			
 			statement.close();
 			resultSet.close();
@@ -875,32 +972,6 @@ public class Entertainment
 			connect.disconnect(connection);
 			return null;
 		}
-	}
-	
-	public static DefaultTableModel buildTableModel(ResultSet rs)
-	        throws SQLException {
-
-	    ResultSetMetaData metaData = rs.getMetaData();
-
-	    // names of columns
-	    Vector<String> columnNames = new Vector<String>();
-	    int columnCount = metaData.getColumnCount();
-	    for (int column = 1; column <= columnCount; column++) {
-	        columnNames.add(metaData.getColumnName(column));
-	    }
-
-	    // data of the table
-	    Vector<Vector<Object>> data = new Vector<Vector<Object>>();
-	    while (rs.next()) {
-	        Vector<Object> vector = new Vector<Object>();
-	        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
-	            vector.add(rs.getObject(columnIndex));
-	        }
-	        data.add(vector);
-	    }
-
-	    return new DefaultTableModel(data, columnNames);
-
 	}
 	
 	public ArrayList<Entertainment> getArrayListOfAllItems()

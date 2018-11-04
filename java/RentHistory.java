@@ -1,6 +1,6 @@
-package application;
 
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.regex.Pattern;
 
 public class RentHistory
@@ -9,13 +9,13 @@ public class RentHistory
 	int rid;
 	long count;
 	String title;
-	Timestamp dateRented;
-	Timestamp dateReturned;
+	Date dateRented;
+	Date dateReturned;
 	User user;
 	String name;
 	String address;
 	
-	public RentHistory(int eid, int rid, String title, String email, Timestamp dateRented)
+	public RentHistory(int eid, int rid, String title, String email, Date dateRented)
 	{
 		String a[];
 		
@@ -45,7 +45,7 @@ public class RentHistory
 		this.count = count;
 	}
 	
-	public RentHistory(int eid, int rid, String title, Timestamp dateRented)
+	public RentHistory(int eid, int rid, String title, Date dateRented)
 	{
 		this.eid = eid;
 		this.rid = rid;
@@ -53,7 +53,7 @@ public class RentHistory
 		this.dateRented = dateRented;
 	}
 	
-	public RentHistory(int eid, int rid, String title, Timestamp dateRented, Timestamp dateReturned)
+	public RentHistory(int eid, int rid, String title, Date dateRented, Date dateReturned)
 	{
 		this.eid = eid;
 		this.rid = rid;
@@ -98,12 +98,12 @@ public class RentHistory
 		return title;
 	}
 	
-	public Timestamp getDateRented()
+	public Date getDateRented()
 	{
 		return dateRented;
 	}
 	
-	public Timestamp getDateReturned()
+	public Date getDateReturned()
 	{
 		return dateReturned;
 	}
