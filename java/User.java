@@ -642,59 +642,58 @@ public class User
 		}
 	}
 	
-	public ArrayList<RentHistory> adminGetLast24Hours()
+	public DefaultTableModel adminGetLast24Hours()
 	{
 		ArrayList<RentHistory> list = new ArrayList<RentHistory>();
 		Statement statement;
 		Calendar calendar;
 		Date yesterday;
 		Timestamp oneDayAgo;
-		Timestamp rentDate;
+//		Timestamp rentDate;
 		
 		calendar = Calendar.getInstance();
 		calendar.add(Calendar.DATE, -1);
 		yesterday = calendar.getTime();
 		oneDayAgo = new Timestamp(yesterday.getTime());
 		
-		System.out.println(yesterday.toString() + " " + oneDayAgo.toString());
+		System.out.println(yesterday.toString() + " $$$ " + oneDayAgo.toString());
 		connection = connect.connect();
 		
 		try
 		{
 			statement = connection.createStatement();
 			
-			ResultSet resultSet = statement.executeQuery("SELECT * "
-					+ "FROM rent_history R "
-					+ "INNER JOIN Entertainment E ON R.eid = E.eid "
-					+ "INNER JOIN Users U ON R.user_email = U.user_email "
+			ResultSet resultSet = statement.executeQuery("SELECT R.rid AS 'Rent ID', E.title AS 'Title', U.user_email AS 'Member', A.street AS 'Street', "
+					+ "A.city AS 'City', A.state AS 'State', A.zip AS 'Zip Code', R.time_rented AS 'Rent Date', R.time_returned AS 'Return Date' "
+					+ "FROM rent_history R NATURAL JOIN entertainment E NATURAL JOIN users U NATURAL JOIN address A "
 					+ "WHERE R.time_rented > '" + oneDayAgo + "'");
 			
-			while(resultSet.next())
-			{
-				rentDate = (Timestamp)resultSet.getObject(4);
-				
-				System.out.println("INSIDE GETTING LAST 24");
-				
-				System.out.println((String)resultSet.getObject(3));
-				
-				list.add(new RentHistory((int)resultSet.getObject(2), (int)resultSet.getObject(1), (String)resultSet.getObject(7),
-						(String)resultSet.getObject(3), rentDate));
-			}
-			
+//			while(resultSet.next())
+//			{
+//				rentDate = (Timestamp)resultSet.getObject(4);
+//				
+//				System.out.println("INSIDE GETTING LAST 24");
+//				
+//				System.out.println((String)resultSet.getObject(3));
+//				
+//				list.add(new RentHistory((int)resultSet.getObject(2), (int)resultSet.getObject(1), (String)resultSet.getObject(7),
+//						(String)resultSet.getObject(3), rentDate));
+//			}
+			DefaultTableModel tableModel = TableModelUtil.buildTableModel(resultSet);
 			resultSet.close();
 			statement.close();
 			connect.disconnect(connection);
-			return list;
+			return tableModel;
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 			connect.disconnect(connection);
-			return list;
+			return null;
 		}
 	}
 	
-	public ArrayList<RentHistory> adminGetTop10LastMonth()
+	public DefaultTableModel adminGetTop10LastMonth()
 	{
 		ArrayList<RentHistory> list = new ArrayList<RentHistory>();
 		Statement statement;
@@ -727,42 +726,44 @@ public class User
 		{
 			statement = connection.createStatement();
 			
-			ResultSet resultSet = statement.executeQuery("SELECT E.eid, E.title, R.rid, COUNT(R.eid) "
-					+ "FROM rent_history R "
-					+ "INNER JOIN Entertainment E ON R.eid = E.eid "
+			ResultSet resultSet = statement.executeQuery("SELECT T.eid AS 'ID', T.title AS 'Title', T.count AS 'Num Rentals' "
+					+ "FROM (SELECT E.eid, E.title, R.rid, COUNT(R.eid) AS 'count' "
+					+ "FROM rent_history R NATURAL JOIN entertainment E "
 					+ "WHERE R.time_rented > '" + lastMonth + "' AND R.time_rented < '" + startThisMonth + "' "
-					+ "GROUP BY E.title");
+					+ "GROUP BY E.title) T "
+					+ "ORDER BY T.count DESC LIMIT 5");
 			
-			while(resultSet.next())
-			{				
-				list.add(new RentHistory((int)resultSet.getObject(1), (String)resultSet.getObject(2), 
-						(int)resultSet.getObject(3), (long)resultSet.getObject(4)));
-			}
-			
-			while(list.size() > 10)
-			{
-				for(i = 0; i < list.size(); i++)
-				{
-					if(list.get(i).getCount() < lowestCount)
-					{
-						lowestCount = list.get(i).getCount();
-						pos = i;
-					}
-				}
-					
-				list.remove(i);
-			}
-			
+//			while(resultSet.next())
+//			{				
+//				list.add(new RentHistory((int)resultSet.getObject(1), (String)resultSet.getObject(2), 
+//						(int)resultSet.getObject(3), (long)resultSet.getObject(4)));
+//			}
+//			
+//			while(list.size() > 10)
+//			{
+//				for(i = 0; i < list.size(); i++)
+//				{
+//					if(list.get(i).getCount() < lowestCount)
+//					{
+//						lowestCount = list.get(i).getCount();
+//						pos = i;
+//					}
+//				}
+//					
+//				list.remove(i);
+//			}
+//			
+			DefaultTableModel tableModel = TableModelUtil.buildTableModel(resultSet);
 			resultSet.close();
 			statement.close();
 			connect.disconnect(connection);
-			return list;
+			return tableModel;
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 			connect.disconnect(connection);
-			return list;
+			return null;
 		}
 	}
 }

@@ -36,7 +36,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 	JTable tableViewer;
 	
 	JPanel memberFieldPanel, memberButtonPanel, memberPanel, memberDataPanel;
-	JButton search, clear, rentButton, sequalButton, userHistoryButton;
+	JButton search, clear, rentButton, sequalButton, userHistoryButton, adminGetLast24Button, adminGetTop10Button;
 	JLabel eid, actor, title, genre, director, platform;
 	JTextField idField, actorField, titleField, genreField, directorField, platformField;
 	JTextField searchField;
@@ -114,6 +114,14 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 		userHistoryButton.setActionCommand("USER_HISTORY");
 		userHistoryButton.addActionListener(this);
 		
+		adminGetLast24Button = new JButton("24 Hour Recap");
+		adminGetLast24Button.setActionCommand("ADMIN_GET_24");
+		adminGetLast24Button.addActionListener(this);
+		
+		adminGetTop10Button = new JButton("Top 10 Items");
+		adminGetTop10Button.setActionCommand("ADMIN_GET_TOP_10");
+		adminGetTop10Button.addActionListener(this);
+		
 		eid = new JLabel("ID Number:");
 		actor = new JLabel("Actor/Actress:");
 		title = new JLabel("Title:");
@@ -129,7 +137,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 		platformField = new JTextField();
 		
 		memberFieldPanel = new JPanel(new GridLayout(1, 4));
-		memberButtonPanel = new JPanel(new GridLayout(1, 5));//new GridLayout(1,2));
+		memberButtonPanel = new JPanel(new GridLayout(1, 7));//new GridLayout(1,2));
 		memberDataPanel = new JPanel(new BorderLayout());
 		memberPanel = new JPanel(new BorderLayout());
 		 
@@ -157,6 +165,8 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 		memberButtonPanel.add(sequalButton);
 		memberButtonPanel.add(rentButton);
 		memberButtonPanel.add(userHistoryButton);
+		memberButtonPanel.add(adminGetLast24Button);
+		memberButtonPanel.add(adminGetTop10Button);
 		memberFieldPanel.add(searchLabel);
 		memberFieldPanel.add(searchField);
 		memberFieldPanel.add(comboBox);
@@ -241,6 +251,26 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 			scrollPane.setPreferredSize(new Dimension(600, 200));
 			
 			JOptionPane.showMessageDialog(this, scrollPane, currentUser.getName() + "'s Rent History", JOptionPane.INFORMATION_MESSAGE);
+		}
+		
+		else if (e.getActionCommand().equals("ADMIN_GET_24")){
+			DefaultTableModel tableModel = currentUser.adminGetLast24Hours();
+			
+			JTable rentHistoryTable = new JTable(tableModel);
+			JScrollPane scrollPane = new JScrollPane(rentHistoryTable);
+			scrollPane.setPreferredSize(new Dimension(600, 200));
+			
+			JOptionPane.showMessageDialog(this, scrollPane, "24-Hour Order History", JOptionPane.INFORMATION_MESSAGE);
+		}
+		
+		else if (e.getActionCommand().equals("ADMIN_GET_TOP_10")){
+			DefaultTableModel tableModel = currentUser.adminGetTop10LastMonth();
+			
+			JTable rentHistoryTable = new JTable(tableModel);
+			JScrollPane scrollPane = new JScrollPane(rentHistoryTable);
+			scrollPane.setPreferredSize(new Dimension(600, 200));
+			
+			JOptionPane.showMessageDialog(this, scrollPane, "Top 10 Items of the Month", JOptionPane.INFORMATION_MESSAGE);
 		}
 	}//end actionPerformed() method
 	

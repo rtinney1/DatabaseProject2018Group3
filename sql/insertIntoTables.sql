@@ -40,3 +40,13 @@ INSERT INTO Rent_History VALUES (0, 1, 'test1@name.com', '2008-09-09 12:12:12', 
 INSERT INTO Rent_History VALUES (0, 6, 'test1@name.com', '2007-09-09 12:12:12', 0);
 INSERT INTO Rent_History VALUES (0, 3, 'test1@name.com', '2003-12-10 12:12:12', '2022-12-10 12:12:12');
 INSERT INTO Rent_History VALUES (0, 2, 'test1@name.com', '2004-05-09 12:12:12', 0);
+INSERT INTO Rent_History VALUES (0, 7, 'test1@name.com', '2018-11-07 12:12:12', 0);
+INSERT INTO Rent_History VALUES (0, 5, 'test1@name.com', '2018-11-07 12:12:12', 0);
+INSERT INTO Rent_History VALUES (0, 4, 'test1@name.com', '2018-11-07 12:12:12', 0);
+INSERT INTO Rent_History VALUES (0, 4, 'admin@name.com', '2018-11-07 12:12:12', 0);
+INSERT INTO Rent_History VALUES (0, 3, 'admin@name.com', '2018-11-07 12:12:12', 0);
+INSERT INTO Rent_History VALUES (0, 4, 'admin@name.com', '2018-11-07 12:12:12', 0);
+INSERT INTO Rent_History VALUES (0, 4, 'admin@name.com', '2018-10-20 12:12:12', 0);
+INSERT INTO Rent_History VALUES (0, 4, 'admin@name.com', '2018-10-20 12:12:12', 0);
+INSERT INTO Rent_History VALUES (0, 4, 'admin@name.com', '2018-10-20 12:12:12', 0);
+INSERT INTO Rent_History VALUES (0, 4, 'admin@name.com', '2018-10-20 12:12:12', 0);
