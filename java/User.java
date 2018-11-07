@@ -577,7 +577,8 @@ public class User
 		{
 			statement = connection.createStatement();
 			
-			ResultSet resultSet = statement.executeQuery("SELECT E.eid, E.title, E.genre, E.platform, R.time_rented, R.time_returned FROM rent_history R "
+			ResultSet resultSet = statement.executeQuery("SELECT E.eid AS 'ID', E.title AS 'Title', E.genre AS 'Genre', "
+					+ "E.platform AS 'Platform', R.time_rented AS 'Rent Date', R.time_returned AS 'Return Date' FROM rent_history R "
 					+ "INNER JOIN Entertainment E ON R.eid = E.eid "
 					+ "INNER JOIN Users U ON R.user_email = U.user_email "
 					+ "WHERE R.user_email = '" + email + "'");
