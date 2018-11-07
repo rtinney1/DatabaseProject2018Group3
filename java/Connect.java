@@ -1,3 +1,15 @@
+/*Connect.java
+ * Created by: Randi Tinney
+ * Created On: Oct 24 2018
+ * Updated On: Nov 2 2018
+ * Description: Connect.java is the main class that connects to the database.
+ * 		It has a default constructor and then the user needs to call on the conenct method
+ * 		to get the needed Connection object. The disconnect method is then passed the 
+ * 		Connection object to ensure the connection to the database is severed
+ */
+
+package application;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -5,15 +17,18 @@ import java.sql.SQLException;
 public class Connect
 {
 	static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
-	static final String DATABASE_URL = "jdbc:mysql://127.0.0.1:3306/dbclasstest";
+	static final String DATABASE_URL = "jdbc:mysql://127.0.0.1:3306/dbclasstest?zeroDateTimeBehavior=CONVERT_TO_NULL";
 	//root@127.0.0.1:3306
 	String username = "root";
 	String password = "toor";
 	
-	
+	//Default constructor
 	public Connect()
 	{	}
 	
+	/*Connection connect()
+	 * Returns a Connection object when it has connected to the database
+	 */
 	public Connection connect()
 	{
 		Connection connection = null;
@@ -22,11 +37,7 @@ public class Connect
 		try
 		{
 			Class.forName(JDBC_DRIVER).newInstance();
-			System.out.println("successful 1");
 			connection = DriverManager.getConnection(DATABASE_URL, username, password);// username , password);
-			System.out.println("successful 2");
-
-			System.out.println("Database connected!");
 			
 			return connection;
 		}
@@ -37,6 +48,9 @@ public class Connect
 		}
 	}
 	
+	/*boolean disconnect(Connection connection)
+	 * Disconnects the connection to the database
+	 */
 	public boolean disconnect(Connection connection)
 	{
 		try {
