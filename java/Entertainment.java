@@ -397,7 +397,11 @@ public class Entertainment
 					statement = connection.createStatement();
 					
 					// Building the select query to include all sequel id checks
-					String query = "SELECT * FROM Entertainment E WHERE ";
+					String query = "SELECT eid AS 'ID', title AS 'Title', "
+					+ "release_date AS 'Release Date', genre AS 'Genre', "
+					+ "num_in_stock AS 'Stock', awards_won AS 'Awards Won', "
+					+ "sequal_id AS 'Sequel ID', platform AS 'Platform', version AS 'Version' "
+					+ "FROM Entertainment E WHERE ";
 					int count = 0;
 					
 					if (sequalIdList.size() > 1)
@@ -954,9 +958,17 @@ public class Entertainment
 			
 			else if (searchBy.equals("TITLE") || searchBy.equals("PLATFORM") || searchBy.equals("GENRE")){
 				if (awardWinners)
-					resultSet = statement.executeQuery("SELECT * FROM Entertainment E WHERE " + searchBy.toLowerCase() + " LIKE '" + searchTerm + "' AND E.awards_won > 0");
+					resultSet = statement.executeQuery("SELECT eid AS 'ID', title AS 'Title', "
+							+ "release_date AS 'Release Date', genre AS 'Genre', "
+							+ "num_in_stock AS 'Stock', awards_won AS 'Awards Won', "
+							+ "sequal_id AS 'Sequel ID', platform AS 'Platform', version AS 'Version' "
+							+ "FROM Entertainment E WHERE " + searchBy.toLowerCase() + " LIKE '" + searchTerm + "' AND E.awards_won > 0");
 				else
-					resultSet = statement.executeQuery("SELECT * FROM Entertainment E WHERE " + searchBy.toLowerCase() + " LIKE '" + searchTerm + "'");
+					resultSet = statement.executeQuery("SELECT eid AS 'ID', title AS 'Title', "
+							+ "release_date AS 'Release Date', genre AS 'Genre', "
+							+ "num_in_stock AS 'Stock', awards_won AS 'Awards Won', "
+							+ "sequal_id AS 'Sequel ID', platform AS 'Platform', version AS 'Version' "
+							+ "FROM Entertainment E WHERE " + searchBy.toLowerCase() + " LIKE '" + searchTerm + "'");
 			}
 			
 			DefaultTableModel tableModel = TableModelUtil.buildTableModel(resultSet);
