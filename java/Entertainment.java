@@ -430,58 +430,6 @@ public class Entertainment
 		return null;
 	}
 	
-	public ArrayList<Entertainment> getSequal()
-	{
-		ArrayList<Entertainment> list = new ArrayList<Entertainment>();
-		Entertainment sequal;
-		boolean sequalExists = true;
-		int id = getSequalID();
-		
-		Statement statement;
-		connection = connect.connect();
-		
-		System.out.println("SequalID: " + id);
-		
-		if(id == 0)
-		{
-			return list;
-		}
-		else
-		{
-			try
-			{
-				statement = connection.createStatement();
-				
-				while(sequalExists)
-				{
-					sequal = new Entertainment(id);
-					System.out.println("Get title in getSequal()");
-					System.out.println(sequal.getTitle());
-					list.add(sequal);
-					
-					
-					ResultSet resultSet = statement.executeQuery("SELECT sequal_id FROM Entertainment E "
-							+ "WHERE E.eid = " + sequal.getSequalID());
-					
-					if(resultSet.next())
-						id = (int)resultSet.getObject(1);
-					else
-						sequalExists = false;
-					
-					System.out.println(id);
-				}
-				
-				return list;
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-				connect.disconnect(connection);
-				return list;
-			}
-		}
-	}
-	
 	public String getPlatform()
 	{
 		return platform;
