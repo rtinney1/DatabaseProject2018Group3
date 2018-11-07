@@ -797,48 +797,20 @@ public class Entertainment
 			else if(searchTerm.equals("MOVIES_ONLY"))
 			{
 				resultSet = statement.executeQuery("SELECT * FROM Entertainment E WHERE platform ='DVD' OR platform = 'BlueRay'");
-				
-//				while(resultSet.next())
-//				{
-//					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
-//							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
-//							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
-//				}
 			}
 			else if(searchTerm.equals("GAMES_ONLY"))
 			{
 				resultSet = statement.executeQuery("SELECT * FROM Entertainment E WHERE platform <>'DVD' AND platform <> 'BlueRay'");
-				
-//				while(resultSet.next())
-//				{
-//					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
-//							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
-//							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
-//				}
 			}
 			else if(searchTerm.equals("AWARDS_MOVIES"))
 			{
 				resultSet = statement.executeQuery("SELECT * FROM Entertainment E "
 						+ "WHERE awards_won > 0 AND platform ='DVD' OR platform = 'BlueRay'");
-				
-//				while(resultSet.next())
-//				{
-//					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
-//							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
-//							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
-//				}
 			}
 			else if(searchTerm.equals("AWARDS_GAMES"))
 			{
 				resultSet = statement.executeQuery("SELECT * FROM Entertainment E "
 						+ "WHERE awards_won > 0 AND platform <>'DVD' AND platform <> 'BlueRay'");
-				
-//				while(resultSet.next())
-//				{
-//					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
-//							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
-//							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
-//				}
 			}
 			else if(searchTerm.equals("MOVIE_NO_CHECK"))
 			{
@@ -846,13 +818,6 @@ public class Entertainment
 						+ "INNER JOIN Entertainment E ON R.eid = E.eid "
 						+ "INNER JOIN Users U ON R.user_email = U.user_email "
 						+ "WHERE R.user_email = '" + userEmail + "' AND E.platform = 'DVD' OR E.platform = 'BlueRay'");
-				
-//				while(resultSet.next())
-//				{
-//					list.add(new Entertainment((int)resultSet.getObject(6), (String)resultSet.getObject(7), (String)resultSet.getObject(8), 
-//							(String)resultSet.getObject(9), (int)resultSet.getObject(10), (String)resultSet.getObject(11), 
-//							(int)resultSet.getObject(12), (String)resultSet.getObject(13), (String)resultSet.getObject(14)));
-//				}
 			}
 			else if(searchTerm.equals("GAME_NO_CHECK"))
 			{
@@ -860,13 +825,6 @@ public class Entertainment
 						+ "INNER JOIN Entertainment E ON R.eid = E.eid "
 						+ "INNER JOIN Users U ON R.user_email = U.user_email "
 						+ "WHERE R.user_email = '" + userEmail + "' AND E.platform <> 'DVD' AND E.platform <> 'BlueRay'");
-				
-//				while(resultSet.next())
-//				{
-//					list.add(new Entertainment((int)resultSet.getObject(6), (String)resultSet.getObject(7), (String)resultSet.getObject(8), 
-//							(String)resultSet.getObject(9), (int)resultSet.getObject(10), (String)resultSet.getObject(11), 
-//							(int)resultSet.getObject(12), (String)resultSet.getObject(13), (String)resultSet.getObject(14)));
-//				}
 			}
 			else if(searchBy.equals("ACTOR"))
 			{
@@ -877,13 +835,6 @@ public class Entertainment
 						+ "INNER JOIN Entertainment E ON W.eid = E.eid "
 						+ "INNER JOIN Cast_Member C ON W.cid = C.cid "
 						+ "WHERE C.name LIKE '" + searchTerm + "'");
-				
-//				while(resultSet.next())
-//				{
-//					list.add(new Entertainment((int)resultSet.getObject(3), (String)resultSet.getObject(4), (String)resultSet.getObject(5), 
-//							(String)resultSet.getObject(6), (int)resultSet.getObject(7), (String)resultSet.getObject(8), 
-//							(int)resultSet.getObject(9), (String)resultSet.getObject(10), (String)resultSet.getObject(11)));
-//				}
 			}
 			else if(searchBy.equals("DIRECTOR"))
 			{
