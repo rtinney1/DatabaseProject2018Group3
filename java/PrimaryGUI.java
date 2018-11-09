@@ -35,13 +35,13 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 	JScrollPane scroller;
 	JTable tableViewer;
 	
-	JPanel memberFieldPanel, memberButtonPanel, memberPanel, memberDataPanel;
+	JPanel memberFieldPanel, memberButtonPanel, memberPanel, memberDataPanel, memberTopPanel, searchPanel;
 	JButton search, clear, rentButton, sequalButton, userHistoryButton, adminGetLast24Button, adminGetTop10Button;
-	JLabel eid, actor, title, genre, director, platform;
+	JLabel eid, actor, title, genre, director, platform, searchLabel;
 	JTextField idField, actorField, titleField, genreField, directorField, platformField;
 	JTextField searchField;
 	
-	JRadioButton awardWinningRadioButton;
+	JCheckBox awardWinner;
 	JComboBox<String> comboBox;
 	JScrollPane sPane;
 	JTable dataTable;
@@ -68,6 +68,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 		login = new JButton("Login");
 		login.setActionCommand("LOGIN");
 		login.addActionListener(this);
+		rootPane.setDefaultButton(login);
 		
 		register = new JButton("Register");
 		register.setActionCommand("REGISTER");
@@ -96,7 +97,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 		search = new JButton("Search");
 		search.setActionCommand("SEARCH");
 		search.addActionListener(this);
-		
+				
 		clear = new JButton("Clear");
 		clear.setActionCommand("CLEAR");
 		clear.addActionListener(this);
@@ -136,13 +137,17 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 		directorField = new JTextField();
 		platformField = new JTextField();
 		
-		memberFieldPanel = new JPanel(new GridLayout(1, 4));
+		memberFieldPanel = new JPanel();
+		searchPanel = new JPanel();
+		memberTopPanel = new JPanel(new GridLayout(2, 1));
 		memberButtonPanel = new JPanel(new GridLayout(1, 7));//new GridLayout(1,2));
 		memberDataPanel = new JPanel(new BorderLayout());
 		memberPanel = new JPanel(new BorderLayout());
 		 
-		JLabel searchLabel = new JLabel("Search");
+		searchLabel = new JLabel("Search: ");
 		searchField = new JTextField();
+		searchField.setPreferredSize(new Dimension(200, 25));
+		
 		 
 		String[] choices = { "Title","Actor", "Genre","Director","Platform"};
 		
@@ -151,7 +156,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 		 
 		dataTable = new JTable(new DefaultTableModel());
 		 
-		awardWinningRadioButton = new JRadioButton("Award Winners Only");
+		awardWinner = new JCheckBox("Award Winners Only");
 		 
 		sPane = new JScrollPane(dataTable);
 		
@@ -160,7 +165,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 		memberDataPanel.setPreferredSize(new Dimension(500, 200));
 		
 		
-		memberButtonPanel.add(search);
+		//memberButtonPanel.add(search);
 		memberButtonPanel.add(clear);
 		memberButtonPanel.add(sequalButton);
 		memberButtonPanel.add(rentButton);
@@ -170,12 +175,15 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 		memberFieldPanel.add(searchLabel);
 		memberFieldPanel.add(searchField);
 		memberFieldPanel.add(comboBox);
-		memberFieldPanel.add(awardWinningRadioButton);
+		memberFieldPanel.add(awardWinner);
 		memberDataPanel.add(sPane, BorderLayout.CENTER);
 		 
-		memberPanel.add(memberFieldPanel, BorderLayout.NORTH);
+		memberTopPanel.add(memberFieldPanel);
+		searchPanel.add(search);
+		memberTopPanel.add(searchPanel);
+		
 		memberPanel.add(memberButtonPanel, BorderLayout.SOUTH);
-		memberPanel.add(memberDataPanel, BorderLayout.CENTER);
+		//memberPanel.add(memberDataPanel, BorderLayout.CENTER);
 		 
 		cp = getContentPane();
 		cp.add(Box.createRigidArea(new Dimension(50,0)), BorderLayout.WEST);
@@ -214,7 +222,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 			String searchBy = comboBox.getSelectedItem().toString().toUpperCase();
 			
 			Entertainment entertainment = new Entertainment();
-			DefaultTableModel tableModel = entertainment.searchBy(searchTerm, searchBy, null, awardWinningRadioButton.isSelected());
+			DefaultTableModel tableModel = entertainment.searchBy(searchTerm, searchBy, null, awardWinner.isSelected());
 
 			memberDataPanel.removeAll();
 			dataTable = new JTable(tableModel);
@@ -295,7 +303,9 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 		cp.removeAll();
 		//cp.add(Box.createRigidArea(new Dimension(30,0)), BorderLayout.WEST);
 		//cp.add(Box.createRigidArea(new Dimension(30,0)), BorderLayout.EAST);
-		cp.add(memberPanel, BorderLayout.NORTH);
+		cp.add(memberTopPanel, BorderLayout.NORTH);
+		cp.add(memberDataPanel, BorderLayout.CENTER);
+		rootPane.setDefaultButton(search);
 		//cp.add(client.secondaryButtonPanel, BorderLayout.SOUTH);
 		setTitle("Movies-R-Us");
 		setVisible(true);
@@ -303,7 +313,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 	//-----------------------------------------------------------------------------
 	public void doRegister()
 	{
-		
+		new RegHub(this);
 	}//end doRegister() method
 	//-----------------------------------------------------------------------------
 	public	void setupMainFrame()

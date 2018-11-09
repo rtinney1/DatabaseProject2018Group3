@@ -398,10 +398,10 @@ public class Entertainment
 					
 					// Building the select query to include all sequel id checks
 					String query = "SELECT eid AS 'ID', title AS 'Title', "
-							+ "release_date AS 'Release Date', genre AS 'Genre', "
-							+ "num_in_stock AS 'Stock', awards_won AS 'Awards Won', "
-							+ "sequal_id AS 'Sequel ID', platform AS 'Platform', version AS 'Version' "
-							+ "FROM Entertainment E WHERE ";
+					+ "release_date AS 'Release Date', genre AS 'Genre', "
+					+ "num_in_stock AS 'Stock', awards_won AS 'Awards Won', "
+					+ "sequal_id AS 'Sequel ID', platform AS 'Platform', version AS 'Version' "
+					+ "FROM Entertainment E WHERE ";
 					int count = 0;
 					
 					if (sequalIdList.size() > 1)
