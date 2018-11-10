@@ -19,7 +19,7 @@ public class Connect
 	static final String DATABASE_URL = "jdbc:mysql://127.0.0.1:3306/sys?useLegacyDatetimeCode=false&serverTimezone=America/New_York&zeroDateTimeBehavior=CONVERT_TO_NULL"; 
 	//root@127.0.0.1:3306
 	String username = "root";
-	String password = "password";
+	String password = "root";
 	
 	//Default constructor
 	public Connect()

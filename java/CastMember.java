@@ -9,7 +9,6 @@
  * 		the CastMember object into the database
  */
 
-package application;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

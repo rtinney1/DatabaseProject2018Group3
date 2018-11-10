@@ -793,71 +793,41 @@ public class Entertainment
 					+ "num_in_stock AS 'Stock', awards_won AS 'Awards Won', "
 					+ "sequal_id AS 'Sequel ID', platform AS 'Platform', version AS 'Version' ";
 			
-				//list = getArrayListOfAllItems();
-			if(searchTerm.equals("MOVIES_ONLY"))
-			{
-				resultSet = statement.executeQuery(query + "FROM Entertainment E WHERE platform ='DVD' OR platform = 'BlueRay'");
-			}
-			else if(searchTerm.equals("GAMES_ONLY"))
-			{
-				resultSet = statement.executeQuery(query + "FROM Entertainment E WHERE platform <>'DVD' AND platform <> 'BlueRay'");
-			}
-			else if(searchTerm.equals("AWARDS_MOVIES"))
-			{
-				resultSet = statement.executeQuery(query + "FROM Entertainment E "
-						+ "WHERE awards_won > 0 AND platform ='DVD' OR platform = 'BlueRay'");
-			}
-			else if(searchTerm.equals("AWARDS_GAMES"))
-			{
-				resultSet = statement.executeQuery(query + "FROM Entertainment E "
-						+ "WHERE awards_won > 0 AND platform <>'DVD' AND platform <> 'BlueRay'");
-			}
-			else if(searchTerm.equals("MOVIE_NO_CHECK"))
-			{
-				resultSet = statement.executeQuery(query + "FROM rent_history R "
-						+ "INNER JOIN Entertainment E ON R.eid = E.eid "
-						+ "INNER JOIN Users U ON R.user_email = U.user_email "
-						+ "WHERE R.user_email = '" + userEmail + "' AND E.platform = 'DVD' OR E.platform = 'BlueRay'");
-			}
-			else if(searchTerm.equals("GAME_NO_CHECK"))
-			{
-				resultSet = statement.executeQuery(query + "FROM rent_history R "
-						+ "INNER JOIN Entertainment E ON R.eid = E.eid "
-						+ "INNER JOIN Users U ON R.user_email = U.user_email "
-						+ "WHERE R.user_email = '" + userEmail + "' AND E.platform <> 'DVD' AND E.platform <> 'BlueRay'");
-			}
-			else if(searchBy.equals("ACTOR"))
+			if(searchBy.equals("ACTOR"))
 			{
 				System.out.println(searchTerm);
-				resultSet = statement.executeQuery(query
-						+ "FROM worked_in W "
-						+ "INNER JOIN Entertainment E ON W.eid = E.eid "
-						+ "INNER JOIN Cast_Member C ON W.cid = C.cid "
-						+ "WHERE C.name LIKE '" + searchTerm + "'");
+				query = query + "FROM worked_in W "
+						+ "NATURAL JOIN Entertainment E "
+						+ "NATURAL JOIN Cast_Member C "
+						+ "WHERE C.name LIKE '" + searchTerm + "' ";
 			}
 			else if(searchBy.equals("DIRECTOR"))
 			{
 				System.out.println(searchTerm);
-				resultSet = statement.executeQuery(query
-						+ "FROM worked_in W "
-						+ "INNER JOIN Entertainment E ON W.eid = E.eid "
-						+ "INNER JOIN Cast_Member C ON W.cid = C.cid "
-						+ "WHERE C.name LIKE '" + searchTerm + "' AND C.is_director = 1");
+				query = query + "FROM worked_in W "
+						+ "NATURAL JOIN Entertainment E "
+						+ "NATURAL JOIN Cast_Member C "
+						+ "WHERE C.name LIKE '" + searchTerm + "' AND C.is_director = 1 ";
 			}
-
-			
 			else if (searchBy.equals("TITLE") || searchBy.equals("PLATFORM") || searchBy.equals("GENRE")){
-				query = query + "FROM Entertainment E WHERE " + searchBy.toLowerCase() + " LIKE '" + searchTerm + "' ";
 				
-				if (awardWinners)
-					query = query + "AND E.awards_won > 0 ";
-				if (gamesOnly)
-					query = query + "AND E.platform <> 'DVD' AND E.platform <> 'BlueRay' ";
-				else if (moviesOnly)
-					query = query + "AND E.platform = 'DVD' OR E.platform = 'BlueRay' ";
-				
-				resultSet = statement.executeQuery(query);
+				if (userEmail != null)
+					query = query + "FROM entertainment E WHERE E.eid NOT IN ( "
+							+ "SELECT eid "
+							+ "FROM entertainment E natural join rent_history R "
+							+ "WHERE R.user_email = '" + userEmail + "') ";
+				else
+					query = query + "FROM Entertainment E WHERE " + searchBy.toLowerCase() + " LIKE '" + searchTerm + "' ";
 			}
+			
+			if (awardWinners)
+				query = query + "AND E.awards_won > 0 ";
+			if (gamesOnly)
+				query = query + "AND E.platform <> 'DVD' AND E.platform <> 'BlueRay' ";
+			else if (moviesOnly)
+				query = query + "AND E.platform = 'DVD' OR E.platform = 'BlueRay' ";
+			
+			resultSet = statement.executeQuery(query);
 			
 			DefaultTableModel tableModel = TableModelUtil.buildTableModel(resultSet);
 			

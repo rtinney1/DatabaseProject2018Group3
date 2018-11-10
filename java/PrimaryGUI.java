@@ -211,7 +211,10 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 				searchTerm = "%";
 			}
 			Entertainment entertainment = new Entertainment();
-			DefaultTableModel tableModel = entertainment.searchBy(searchTerm, searchBy, null, awardWinner.isSelected(), gameRad.isSelected(), movRad.isSelected());
+			String userEmail = null;
+			if (newToMe.isSelected())
+				userEmail = currentUser.getEmail();
+			DefaultTableModel tableModel = entertainment.searchBy(searchTerm, searchBy, userEmail, awardWinner.isSelected(), gameRad.isSelected(), movRad.isSelected());
 
 			memberDataPanel.removeAll();
 			dataTable = new JTable(tableModel);
