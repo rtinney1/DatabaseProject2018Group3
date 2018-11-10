@@ -645,12 +645,10 @@ public class User
 	
 	public DefaultTableModel adminGetLast24Hours()
 	{
-		ArrayList<RentHistory> list = new ArrayList<RentHistory>();
 		Statement statement;
 		Calendar calendar;
 		Date yesterday;
 		Timestamp oneDayAgo;
-//		Timestamp rentDate;
 		
 		calendar = Calendar.getInstance();
 		calendar.add(Calendar.DATE, -1);
@@ -669,17 +667,6 @@ public class User
 					+ "FROM rent_history R NATURAL JOIN entertainment E NATURAL JOIN users U NATURAL JOIN address A "
 					+ "WHERE R.time_rented > '" + oneDayAgo + "'");
 			
-//			while(resultSet.next())
-//			{
-//				rentDate = (Timestamp)resultSet.getObject(4);
-//				
-//				System.out.println("INSIDE GETTING LAST 24");
-//				
-//				System.out.println((String)resultSet.getObject(3));
-//				
-//				list.add(new RentHistory((int)resultSet.getObject(2), (int)resultSet.getObject(1), (String)resultSet.getObject(7),
-//						(String)resultSet.getObject(3), rentDate));
-//			}
 			DefaultTableModel tableModel = TableModelUtil.buildTableModel(resultSet);
 			resultSet.close();
 			statement.close();
@@ -696,7 +683,6 @@ public class User
 	
 	public DefaultTableModel adminGetTop10LastMonth()
 	{
-		ArrayList<RentHistory> list = new ArrayList<RentHistory>();
 		Statement statement;
 		Calendar calendar1;
 		Calendar calendar2;
@@ -718,9 +704,6 @@ public class User
 		
 		System.out.println("LastMonth: " + lastMonth.toString() + " ThisMonth: " + startThisMonth.toString());
 
-		long lowestCount = 999999999;
-		int pos;
-		int i;
 		connection = connect.connect();
 		
 		try
@@ -728,32 +711,12 @@ public class User
 			statement = connection.createStatement();
 			
 			ResultSet resultSet = statement.executeQuery("SELECT T.eid AS 'ID', T.title AS 'Title', T.count AS 'Num Rentals' "
-					+ "FROM (SELECT E.eid, E.title, R.rid, COUNT(R.eid) AS 'count' "
+					+ "FROM (SELECT E.eid, E.title, COUNT(R.eid) AS 'count' "
 					+ "FROM rent_history R NATURAL JOIN entertainment E "
 					+ "WHERE R.time_rented > '" + lastMonth + "' AND R.time_rented < '" + startThisMonth + "' "
-					+ "GROUP BY E.title) T "
-					+ "ORDER BY T.count DESC LIMIT 5");
-			
-//			while(resultSet.next())
-//			{				
-//				list.add(new RentHistory((int)resultSet.getObject(1), (String)resultSet.getObject(2), 
-//						(int)resultSet.getObject(3), (long)resultSet.getObject(4)));
-//			}
-//			
-//			while(list.size() > 10)
-//			{
-//				for(i = 0; i < list.size(); i++)
-//				{
-//					if(list.get(i).getCount() < lowestCount)
-//					{
-//						lowestCount = list.get(i).getCount();
-//						pos = i;
-//					}
-//				}
-//					
-//				list.remove(i);
-//			}
-//			
+					+ "GROUP BY E.eid) T "
+					+ "ORDER BY T.count DESC LIMIT 10");
+					
 			DefaultTableModel tableModel = TableModelUtil.buildTableModel(resultSet);
 			resultSet.close();
 			statement.close();

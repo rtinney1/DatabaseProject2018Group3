@@ -8,7 +8,6 @@
  * 		Connection object to ensure the connection to the database is severed
  */
 
-package application;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -17,10 +16,10 @@ import java.sql.SQLException;
 public class Connect
 {
 	static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
-	static final String DATABASE_URL = "jdbc:mysql://127.0.0.1:3306/dbclasstest?zeroDateTimeBehavior=CONVERT_TO_NULL";
+	static final String DATABASE_URL = "jdbc:mysql://127.0.0.1:3306/sys?useLegacyDatetimeCode=false&serverTimezone=America/New_York&zeroDateTimeBehavior=CONVERT_TO_NULL"; 
 	//root@127.0.0.1:3306
 	String username = "root";
-	String password = "toor";
+	String password = "password";
 	
 	//Default constructor
 	public Connect()

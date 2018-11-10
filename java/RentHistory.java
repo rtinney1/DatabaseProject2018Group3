@@ -7,7 +7,6 @@
  * 		on returning the information as it appears in the database
  */
 
-package application;
 
 import java.sql.Timestamp;
 import java.util.regex.Pattern;
