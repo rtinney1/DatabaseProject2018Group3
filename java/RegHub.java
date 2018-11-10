@@ -20,6 +20,15 @@ public class RegHub extends JDialog implements WindowListener,
 	
 	MainGUI parentGUI;
 	
+	String userName = null;
+	String userEmail = null;
+	String userStreet = null;
+	String userCity = null;
+	String userState = null;
+	int userZip;
+	String userPhone = null;
+	String userPass = null;
+	int userPlan;
 	//====================RegHub() constructor===================================================
 	public RegHub(MainGUI parentGUI)
 	{
@@ -134,37 +143,51 @@ public class RegHub extends JDialog implements WindowListener,
 	//====================actionPerformed(Actionevent e)============================================
 	public void actionPerformed(ActionEvent e)
 	{
-		boolean valid;
 		if (e.getActionCommand().equals("CANCEL"))
 		{
 			dispose();
 		}
 		else if(e.getActionCommand().equals("REGISTER"))
 		{
-			valid = MyInputVerifier.nameVerification(nameField, nameLabel);
-			if (valid==false)
-					return;
-			
-			valid = MyInputVerifier.emailVerifier(emailField, emailLabel);
-			if (valid == false)
+	
+			if (!MyInputVerifier.nameVerification(nameField, nameLabel)){
+				System.out.println("Name Not Valid.");
 				return;
-			
-			valid = MyInputVerifier.phoneVerifier(phoneField, phoneLabel);
-			if (valid == false)
+			}
+			else if (!MyInputVerifier.emailVerifier(emailField, emailLabel)){
+				System.out.println("Email Not Valid");
 				return;
-			
-			valid = MyInputVerifier.addressVerifier(addressField_1, addressLabel_1, cityField, cityLabel, stateBox, stateLabel, zipField, zipLabel);
-			if (valid == false)
+			}
+			else if (!MyInputVerifier.phoneVerifier(phoneField, phoneLabel)){
+				System.out.println("Phone Not Valid");
 				return;
-			
-			valid = MyInputVerifier.planVerifier(planBox, planLabel);
-			if (valid == false)
+			}
+			else if (!MyInputVerifier.addressVerifier(addressField_1, addressLabel_1, cityField, cityLabel, stateBox, stateLabel, zipField, zipLabel)){
+				System.out.println("Address Not Valid.");
 				return;
-			
-			valid = MyInputVerifier.passwordVerifier(passField, passwordLabel, passConfField, passConfLabel);
-			if (valid == false)
+			}
+			else if (!MyInputVerifier.planVerifier(planBox, planLabel)){
+				System.out.println("Plan Not Valid.");
 				return;
-					
+			}
+			else if (!MyInputVerifier.passwordVerifier(passField, passwordLabel, passConfField, passConfLabel)){
+				System.out.println("Password Not Valid.");
+				return;
+			}
+			else{
+				//TODO: Register User and Login
+				this.userEmail = emailField.getText().trim();
+				this.userName = nameField.getText().trim();
+				this.userPass = String.valueOf(passField.getPassword());
+				this.userStreet = addressField_1.getText().trim();
+				this.userCity = cityField.getText().trim();
+				this.userState = stateBox.getSelectedItem().toString().split("\\(")[1].split("\\)")[0];
+				this.userZip = Integer.parseInt(zipField.getText().trim());
+				this.userPhone = phoneField.getText().trim();
+				this.userPlan = planBox.getSelectedIndex();
+				
+				dispose();
+			}	
 		}
 	}
 	//================(WindowEvent e)===========================================
@@ -220,6 +243,34 @@ public class RegHub extends JDialog implements WindowListener,
 		public void windowOpened(WindowEvent e)
 		{}
 
-
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		
+		public String getUserName() {
+			return userName;
+		}
+		public String getUserEmail() {
+			return userEmail;
+		}
+		public String getUserStreet() {
+			return userStreet;
+		}
+		public String getUserCity() {
+			return userCity;
+		}
+		public String getUserState() {
+			return userState;
+		}
+		public int getUserZip() {
+			return userZip;
+		}
+		public String getUserPhone() {
+			return userPhone;
+		}
+		public String getUserPass() {
+			return userPass;
+		}
+		public int getUserPlan() {
+			return userPlan;
+		}
+		
 }// end RegHub class

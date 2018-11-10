@@ -18,7 +18,7 @@ public class PrimaryGUI
 
 //-----------------------------------------------------------------------------
 
-class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
+class MainGUI extends JFrame implements ActionListener, ListSelectionListener, WindowListener/*,
 																		ListSelectionListener,
 																		MouseListener*/
 {
@@ -49,6 +49,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 	JPasswordField passField;
 	
 	User currentUser;
+	RegHub mainRegHub;
 	//-----------------------------------------------------------------------------
 	public MainGUI()
 	{
@@ -310,7 +311,8 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 	//-----------------------------------------------------------------------------
 	public void doRegister()
 	{
-		new RegHub(this);
+		mainRegHub = new RegHub(this);
+		mainRegHub.addWindowListener(this);
 	}//end doRegister() method
 	
 	//-----------------------------------------------------------------------------
@@ -392,6 +394,50 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener/*,
 			e.printStackTrace();
 			return false;
 		}
+	}
+
+	@Override
+	public void windowActivated(WindowEvent e) {
+		System.out.println("Window activated...");
+	}
+	@Override
+	public void windowClosed(WindowEvent e) {
+		if (mainRegHub.getUserEmail() != null){
+			try {
+				currentUser = new User(mainRegHub.getUserEmail(), mainRegHub.getUserPass(), mainRegHub.getUserName(), 
+						mainRegHub.getUserPhone(), mainRegHub.getUserStreet(), mainRegHub.getUserCity(), 
+						mainRegHub.getUserState(), mainRegHub.getUserZip(), false);
+			} catch (LoginException e1) {
+				System.out.println("Failed to create user...");
+				e1.printStackTrace();
+			}
+			
+			boolean isSuccessful = attemptLogin(currentUser.getEmail(), mainRegHub.getUserPass());
+			if (isSuccessful)
+				doLogin();
+			else{
+				//TODO: Display some sort of error on login page
+				System.out.println("Failed login.");
+			}
+		}
+		else{
+			System.out.println("Registration Window Closed...");
+		}
+	}
+	@Override
+	public void windowClosing(WindowEvent e) {
+	}
+	@Override
+	public void windowDeactivated(WindowEvent e) {
+	}
+	@Override
+	public void windowDeiconified(WindowEvent e) {
+	}
+	@Override
+	public void windowIconified(WindowEvent e) {
+	}
+	@Override
+	public void windowOpened(WindowEvent e) {
 	}
 
 }//end MainGUI class

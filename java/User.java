@@ -20,7 +20,11 @@ public class User
 	String email;
 	String name;
 	String phone;
-	String address;
+	String street;
+	String city;
+	String state;
+	int zip;
+	int subPlan;
 	
 	boolean admin;
 	
@@ -38,12 +42,15 @@ public class User
 		get(email);
 	}
 	
-	public User(String email, String name, String phone, String address, boolean admin)
+	public User(String email, String name, String phone, String street, String city, String state, int zip, boolean admin)
 	{
 		this.email = email;
 		this.name = name;
 		this.phone = phone;
-		this.address = address;
+		this.street = street;
+		this.city = city;
+		this.state = state;
+		this.zip = zip;
 		this.admin = admin;
 	}
 	
@@ -54,11 +61,12 @@ public class User
 	}
 	
 	//new user creating account
-	public User(String email, String password, String name, String phone, String address, boolean admin) throws LoginException
+	public User(String email, String password, String name, String phone, String street, String city, String state, int zip, boolean admin) throws LoginException
 	{
 		connect = new Connect();
-		if(!createUser(email, password, name, phone, address, admin))
+		if(createUser(email, password, name, phone, street, city, state, zip, admin) == null)
 		{
+			System.out.println("Failed to login");
 			throw new LoginException("User already exists");
 		}
 		else
@@ -66,7 +74,10 @@ public class User
 			this.email = email;
 			this.name = name;
 			this.phone = phone;
-			this.address = address;
+			this.street = street;
+			this.city = city;
+			this.state = state;
+			this.zip = zip;
 			this.admin = admin;
 		}
 	}
@@ -92,8 +103,10 @@ public class User
 	        	 this.email = (String)resultSet.getObject(1);
 	        	 name = (String)resultSet.getObject(2);
 	        	 phone = (String)resultSet.getObject(4);
-	        	 address = (String)resultSet.getObject(11) + "$" + (String)resultSet.getObject(10) + "$" + (String)resultSet.getObject(9) + "$" + (int)resultSet.getObject(12);
-	        
+	        	 street = (String)resultSet.getObject(11);
+	        	 city = (String)resultSet.getObject(10);
+	        	 state = (String)resultSet.getObject(9);
+	        	 zip = (int)resultSet.getObject(12);
 	        	 admin = (boolean)resultSet.getObject(6);
 	        	 
 		         resultSet.close();
@@ -135,11 +148,14 @@ public class User
 	        	 this.email = (String)resultSet.getObject(1);
 	        	 name = (String)resultSet.getObject(2);
 	        	 phone = (String)resultSet.getObject(4);
-	        	 address = (String)resultSet.getObject(11) + "$" + (String)resultSet.getObject(10) + "$" + (String)resultSet.getObject(9) + "$" + (int)resultSet.getObject(12);
-	        
+	        	 street = (String)resultSet.getObject(11);
+	        	 city = (String)resultSet.getObject(10);
+	        	 state = (String)resultSet.getObject(9);
+	        	 zip = (int)resultSet.getObject(12);
 	        	 admin = (boolean)resultSet.getObject(6);
 	        	 
-	        	 System.out.println("" + this.email + " " + name + " " + phone + " " + address);
+	        	 System.out.println("" + this.email + " " + name + " " + phone + " " + street + " " + city + " " + state + " " + zip);
+	        	 
 		         resultSet.close();
 		         statement.close();
 		         System.out.println("HELLO");
@@ -163,17 +179,11 @@ public class User
 		}
 	}
 	
-	public boolean createUser(String email, String password, String name, String phone, String address, boolean a)
+	public User createUser(String email, String password, String name, String phone, String street, String city, String state, int zip, boolean a)
 	{
 		Statement statement;
-		String[] addressSplit;
-		String street;
-		String city;
-		String state;
 		int aid = 0;
-		int zip;
-		
-		
+
 		try
 		{
 			connection = connect.connect();
@@ -185,23 +195,15 @@ public class User
 	         // process query results
 			if(resultSet.next())
 			{
+				System.out.println("User already exists");
 				resultSet.close();
 		        statement.close();
 				connect.disconnect(connection);
-				return false;
+				return null;
 			}
 			else
-			{
-				
-				addressSplit = address.split(Pattern.quote("$"));
-				
-				street = addressSplit[0];
-				city = addressSplit[1];
-				state = addressSplit[2];
-				zip = Integer.parseInt(addressSplit[3]);
-				
+			{	
 				statement = connection.createStatement();
-				
 				resultSet = statement.executeQuery("SELECT aid FROM Address "
 						+ "WHERE state = '" + state + "' AND city = '" + city + "' AND street = '" + street + "' AND zip = " + zip);
 				
@@ -209,21 +211,14 @@ public class User
 				{
 					aid = (int)resultSet.getObject(1);
 					
-					System.out.println("" + aid);
+					System.out.println("Address ID: " + aid);
 					
 					statement.executeUpdate("INSERT INTO Users VALUES"
 							+ "('" + email + "','" + name + "','" + password + "'," + phone + "," + aid +  "," + a + "," + 1 + ")");
 					
-					this.email = email;
-					this.name = name;
-					this.phone = phone;
-					this.address = address;
-					this.admin = a;
-					
 					resultSet.close();
 			        statement.close();
 					connect.disconnect(connection);
-					return true;
 				}
 				else
 				{
@@ -236,28 +231,33 @@ public class User
 					
 					aid = (int)resultSet.getObject(1);
 					
-					System.out.println("" + aid);
+					System.out.println("New Address ID: " + aid);
 					statement.executeUpdate("INSERT INTO Users VALUES"
 							+ "('" + email + "','" + name + "','" + password + "'," + phone + "," + aid +  "," + a + "," + 1 + ")");
-					
-					this.email = email;
-					this.name = name;
-					this.phone = phone;
-					this.address = address;
-					this.admin = a;
 					
 					resultSet.close();
 			        statement.close();
 					connect.disconnect(connection);
-					return true;
 				}
+				
+				this.street = street;
+				this.city = city;
+				this.state = state;
+				this.zip = zip;
+				this.email = email;
+				this.name = name;
+				this.phone = phone;
+				this.admin = a;
+				
+				return this;
 			}
 		}
 		catch(Exception e)
 		{
+			System.out.println("Create user catch all...");
 			connect.disconnect(connection);
 			e.printStackTrace();
-			return false;
+			return null;
 		}
 	}
 	
@@ -281,10 +281,22 @@ public class User
 		return admin;
 	}
 	
-	public String getAddress()
-	{
-		return address;
+	public String getStreet(){
+		return street;
 	}
+	
+	public String getCity(){
+		return city;
+	}
+	
+	public String getState(){
+		return state;
+	}
+	
+	public int getZip(){
+		return zip;
+	}
+	
 	
 	public int getUserLvl()
 	{
@@ -326,7 +338,7 @@ public class User
 	
 	public void printUserInfo()
 	{
-		System.out.println("email: " + email + " name: "+ name + " phone: " + phone + " address: " + address);
+		System.out.println("email: " + email + " name: "+ name + " phone: " + phone + " street: " + street + " city: " + city + " state: " + state + " zip: " + zip);
 	}
 	
 	public void changeName(String name)
@@ -417,14 +429,9 @@ public class User
 		}
 	}
 	
-	public void changeAddress(String address)
+	public void changeAddress(String street, String city, String state, int zip)
 	{
-		String[] addressSplit;
-		String street;
-		String city;
-		String state;
 		int aid = 0;
-		int zip;
 		
 		Statement statement;
 		
@@ -432,13 +439,6 @@ public class User
 		
 		try
 		{
-			addressSplit = address.split(Pattern.quote("$"));
-			
-			street = addressSplit[0];
-			city = addressSplit[1];
-			state = addressSplit[2];
-			zip = Integer.parseInt(addressSplit[3]);
-			
 			System.out.println(street + " " + city + " " + state + " " + zip);
 			statement = connection.createStatement();
 			
@@ -450,7 +450,10 @@ public class User
 				aid = (int)resultSet.getObject(1);
 				
 				statement.executeUpdate("UPDATE Users SET aid = " + aid + " WHERE user_email = '" + email + "'");
-				this.address = address;
+				this.street = street;
+				this.city = city;
+				this.state = state;
+				this.zip = zip;
 				
 				resultSet.close();
 		        statement.close();
@@ -470,7 +473,10 @@ public class User
 				System.out.println("" + aid);
 				statement.executeUpdate("UPDATE Users SET aid = " + aid + "WHERE user_email = '" + email + "'");
 				
-				this.address = address;
+				this.street = street;
+				this.city = city;
+				this.state = state;
+				this.zip = zip;
 				
 				resultSet.close();
 		        statement.close();
@@ -508,7 +514,6 @@ public class User
 	public ArrayList<User> getArrayListOfAllItems()
 	{
 		ArrayList<User> list = new ArrayList<User>();
-		String address;
 		Statement statement;
 		boolean a;
 		
@@ -523,15 +528,17 @@ public class User
 										 "INNER JOIN Address A on U.aid = A.aid");
 			while(resultSet.next())
 			{
-				address = (String)resultSet.getObject(11) + "$" + (String)resultSet.getObject(10) + "$" + 
-						(String)resultSet.getObject(9) + "$" + (String)resultSet.getObject(12);
+				street = (String)resultSet.getObject(11);
+				city = (String)resultSet.getObject(10);
+				state = (String)resultSet.getObject(9);
+				zip = (int)resultSet.getObject(12);
 				
 				if((int)resultSet.getObject(6) == 0)
 					a = false;
 				else
 					a = true;
 				
-				list.add(new User((String)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(4), address, a));
+				list.add(new User((String)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(4), street, city, state, zip, a));
 			}
 			
 			resultSet.close();
