@@ -6,8 +6,6 @@
  * 		object
  */
 
-package application;
-
 
 public class RentException extends Exception 
 {

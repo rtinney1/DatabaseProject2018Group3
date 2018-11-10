@@ -8,7 +8,6 @@
  * 		Connection object to ensure the connection to the database is severed
  */
 
-package application;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

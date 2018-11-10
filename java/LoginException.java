@@ -6,7 +6,6 @@
  * 		in or registering a new user
  */
 
-package application;
 
 
 public class LoginException extends Exception 

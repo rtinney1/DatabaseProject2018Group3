@@ -6,7 +6,6 @@
  * 		an Entertainment object to the database. 
  */
 
-package application;
 
 
 public class GetEntertainmentException extends Exception {

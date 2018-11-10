@@ -777,12 +777,10 @@ public class Entertainment
 		}
 	}
 	
-	public DefaultTableModel searchBy(String searchTerm, String searchBy, String userEmail, boolean awardWinners)
+	public DefaultTableModel searchBy(String searchTerm, String searchBy, String userEmail, boolean awardWinners, boolean gamesOnly, boolean moviesOnly)
 	{
-		ArrayList<Entertainment> list = new ArrayList<Entertainment>();
 		Statement statement;
 		ResultSet resultSet = null;
-		
 		
 		connection = connect.connect();
 		
@@ -790,38 +788,40 @@ public class Entertainment
 		{
 			statement = connection.createStatement();
 			
-			if(searchTerm.equals("ALL")){
-				resultSet = statement.executeQuery("SELECT * FROM Entertainment");
-			}
+			String query = "SELECT eid AS 'ID', title AS 'Title', "
+					+ "release_date AS 'Release Date', genre AS 'Genre', "
+					+ "num_in_stock AS 'Stock', awards_won AS 'Awards Won', "
+					+ "sequal_id AS 'Sequel ID', platform AS 'Platform', version AS 'Version' ";
+			
 				//list = getArrayListOfAllItems();
-			else if(searchTerm.equals("MOVIES_ONLY"))
+			if(searchTerm.equals("MOVIES_ONLY"))
 			{
-				resultSet = statement.executeQuery("SELECT * FROM Entertainment E WHERE platform ='DVD' OR platform = 'BlueRay'");
+				resultSet = statement.executeQuery(query + "FROM Entertainment E WHERE platform ='DVD' OR platform = 'BlueRay'");
 			}
 			else if(searchTerm.equals("GAMES_ONLY"))
 			{
-				resultSet = statement.executeQuery("SELECT * FROM Entertainment E WHERE platform <>'DVD' AND platform <> 'BlueRay'");
+				resultSet = statement.executeQuery(query + "FROM Entertainment E WHERE platform <>'DVD' AND platform <> 'BlueRay'");
 			}
 			else if(searchTerm.equals("AWARDS_MOVIES"))
 			{
-				resultSet = statement.executeQuery("SELECT * FROM Entertainment E "
+				resultSet = statement.executeQuery(query + "FROM Entertainment E "
 						+ "WHERE awards_won > 0 AND platform ='DVD' OR platform = 'BlueRay'");
 			}
 			else if(searchTerm.equals("AWARDS_GAMES"))
 			{
-				resultSet = statement.executeQuery("SELECT * FROM Entertainment E "
+				resultSet = statement.executeQuery(query + "FROM Entertainment E "
 						+ "WHERE awards_won > 0 AND platform <>'DVD' AND platform <> 'BlueRay'");
 			}
 			else if(searchTerm.equals("MOVIE_NO_CHECK"))
 			{
-				resultSet = statement.executeQuery("SELECT * FROM rent_history R "
+				resultSet = statement.executeQuery(query + "FROM rent_history R "
 						+ "INNER JOIN Entertainment E ON R.eid = E.eid "
 						+ "INNER JOIN Users U ON R.user_email = U.user_email "
 						+ "WHERE R.user_email = '" + userEmail + "' AND E.platform = 'DVD' OR E.platform = 'BlueRay'");
 			}
 			else if(searchTerm.equals("GAME_NO_CHECK"))
 			{
-				resultSet = statement.executeQuery("SELECT * FROM rent_history R "
+				resultSet = statement.executeQuery(query + "FROM rent_history R "
 						+ "INNER JOIN Entertainment E ON R.eid = E.eid "
 						+ "INNER JOIN Users U ON R.user_email = U.user_email "
 						+ "WHERE R.user_email = '" + userEmail + "' AND E.platform <> 'DVD' AND E.platform <> 'BlueRay'");
@@ -829,8 +829,7 @@ public class Entertainment
 			else if(searchBy.equals("ACTOR"))
 			{
 				System.out.println(searchTerm);
-				resultSet = statement.executeQuery("SELECT "
-						+ "E.eid, E.title, E.release_date, E.genre, E.num_in_stock, E.awards_won, E.sequal_id, E.platform, E.version "
+				resultSet = statement.executeQuery(query
 						+ "FROM worked_in W "
 						+ "INNER JOIN Entertainment E ON W.eid = E.eid "
 						+ "INNER JOIN Cast_Member C ON W.cid = C.cid "
@@ -839,35 +838,25 @@ public class Entertainment
 			else if(searchBy.equals("DIRECTOR"))
 			{
 				System.out.println(searchTerm);
-				resultSet = statement.executeQuery("SELECT "
-						+ "E.eid, E.title, E.release_date, E.genre, E.num_in_stock, E.awards_won, E.sequal_id, E.platform, E.version "
+				resultSet = statement.executeQuery(query
 						+ "FROM worked_in W "
 						+ "INNER JOIN Entertainment E ON W.eid = E.eid "
 						+ "INNER JOIN Cast_Member C ON W.cid = C.cid "
 						+ "WHERE C.name LIKE '" + searchTerm + "' AND C.is_director = 1");
-				
-//				while(resultSet.next())
-//				{
-//					list.add(new Entertainment((int)resultSet.getObject(3), (String)resultSet.getObject(4), (String)resultSet.getObject(5), 
-//							(String)resultSet.getObject(6), (int)resultSet.getObject(7), (String)resultSet.getObject(8), 
-//							(int)resultSet.getObject(9), (String)resultSet.getObject(10), (String)resultSet.getObject(11)));
-//				}
 			}
 
 			
 			else if (searchBy.equals("TITLE") || searchBy.equals("PLATFORM") || searchBy.equals("GENRE")){
+				query = query + "FROM Entertainment E WHERE " + searchBy.toLowerCase() + " LIKE '" + searchTerm + "' ";
+				
 				if (awardWinners)
-					resultSet = statement.executeQuery("SELECT eid AS 'ID', title AS 'Title', "
-							+ "release_date AS 'Release Date', genre AS 'Genre', "
-							+ "num_in_stock AS 'Stock', awards_won AS 'Awards Won', "
-							+ "sequal_id AS 'Sequel ID', platform AS 'Platform', version AS 'Version' "
-							+ "FROM Entertainment E WHERE " + searchBy.toLowerCase() + " LIKE '" + searchTerm + "' AND E.awards_won > 0");
-				else
-					resultSet = statement.executeQuery("SELECT eid AS 'ID', title AS 'Title', "
-							+ "release_date AS 'Release Date', genre AS 'Genre', "
-							+ "num_in_stock AS 'Stock', awards_won AS 'Awards Won', "
-							+ "sequal_id AS 'Sequel ID', platform AS 'Platform', version AS 'Version' "
-							+ "FROM Entertainment E WHERE " + searchBy.toLowerCase() + " LIKE '" + searchTerm + "'");
+					query = query + "AND E.awards_won > 0 ";
+				if (gamesOnly)
+					query = query + "AND E.platform <> 'DVD' AND E.platform <> 'BlueRay' ";
+				else if (moviesOnly)
+					query = query + "AND E.platform = 'DVD' OR E.platform = 'BlueRay' ";
+				
+				resultSet = statement.executeQuery(query);
 			}
 			
 			DefaultTableModel tableModel = TableModelUtil.buildTableModel(resultSet);
