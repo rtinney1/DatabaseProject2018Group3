@@ -94,6 +94,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, W
 		rentButton = new JButton("Rent");
 		rentButton.setActionCommand("RENT");
 		rentButton.addActionListener(this);
+		rentButton.setEnabled(false);
 		
 		sequalButton = new JButton("Get Sequals");
 		sequalButton.setActionCommand("SEQUALS");
@@ -206,6 +207,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, W
 		
 		else if (e.getActionCommand().equals("SEARCH")){
 			sequalButton.setEnabled(false);
+			rentButton.setEnabled(false);
 			String searchTerm = searchField.getText().trim();
 			String searchBy = comboBox.getSelectedItem().toString().toUpperCase();
 			if (searchTerm.length() == 0){
@@ -274,6 +276,10 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, W
 			
 			JOptionPane.showMessageDialog(this, scrollPane, "Top 10 Items of the Month", JOptionPane.INFORMATION_MESSAGE);
 		}
+		
+		else if (e.getActionCommand().equals("RENT")){
+			
+		}
 	}//end actionPerformed() method
 	
 	@Override
@@ -283,6 +289,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, W
 	        new Runnable() {
 	            public void run() {
 	                sequalButton.setEnabled(true);
+	                rentButton.setEnabled(true);
 	            }
 	        }
 	    );

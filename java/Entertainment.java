@@ -1027,7 +1027,7 @@ public class Entertainment
 			
 			String query = "SELECT eid AS 'ID', title AS 'Title', "
 					+ "release_date AS 'Release Date', genre AS 'Genre', "
-					+ "num_in_stock AS 'Stock', awards_won AS 'Awards Won', "
+					+ "num_in_stock AS 'Stock', "
 					+ "sequal_id AS 'Sequel ID', platform AS 'Platform', version AS 'Version' ";
 			
 			if(searchBy.equals("ACTOR"))
@@ -1058,7 +1058,10 @@ public class Entertainment
 			}
 			
 			if (awardWinners)
-				query = query + "AND E.awards_won > 0 ";
+				query = query + "AND E.eid IN ( "
+					+ "SELECT DISTINCT eid "
+					+ "FROM won) ";
+			
 			if (gamesOnly)
 				query = query + "AND E.platform <> 'DVD' AND E.platform <> 'BlueRay' ";
 			else if (moviesOnly)
