@@ -278,6 +278,17 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, W
 		}
 		
 		else if (e.getActionCommand().equals("RENT")){
+			try {
+				int eid = (int) dataTable.getValueAt(dataTable.getSelectedRow(), 0);
+				String statusMsg = currentUser.rent(eid);
+				JOptionPane.showMessageDialog(this, statusMsg);
+			} catch (RentException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		
+		else if (e.getActionCommand().equals("EUSER")){
 			
 		}
 	}//end actionPerformed() method

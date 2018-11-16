@@ -1,14 +1,13 @@
 
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.regex.Pattern;
-
 import javax.swing.table.DefaultTableModel;
 
 public class User 
@@ -130,18 +129,21 @@ public class User
 	}
 	public void login(String email, String pass) throws LoginException
 	{
-		Statement statement;
+		PreparedStatement statement;
 		
 		connection = connect.connect();
 		try
-		{
-			statement = connection.createStatement();
-			
-			ResultSet resultSet = statement.executeQuery("SELECT * "
+		{	
+			statement = connection.prepareStatement("SELECT * "
 					+ "FROM Users U "
-					+ "INNER JOIN Address A on U.aid = A.aid "
-					+ "WHERE user_email = '" + email + "' AND pass = '" + pass +"'");
+					+ "INNER JOIN Address A ON U.aid = A.aid "
+					+ "WHERE user_email = ?");
+
+	        statement.clearParameters();
+	        statement.setString(1, email);
+			ResultSet resultSet = statement.executeQuery();
 	         // process query results
+			
 	         
 	         if(resultSet.next())
 	         {
@@ -153,6 +155,7 @@ public class User
 	        	 state = (String)resultSet.getObject(9);
 	        	 zip = (int)resultSet.getObject(12);
 	        	 admin = (boolean)resultSet.getObject(6);
+	        	 subPlan = (int)resultSet.getObject(7);
 	        	 
 	        	 System.out.println("" + this.email + " " + name + " " + phone + " " + street + " " + city + " " + state + " " + zip);
 	        	 
@@ -340,6 +343,115 @@ public class User
 	{
 		System.out.println("email: " + email + " name: "+ name + " phone: " + phone + " street: " + street + " city: " + city + " state: " + state + " zip: " + zip);
 	}
+	
+	/*void rent(Entertainment e)
+	 * Allows a user to rent a piece of entertainment
+	 * Will throw a RentException if the user cannot rent the
+	 * object for some reason
+	 */
+	public String rent(int eid) throws RentException
+	{
+		PreparedStatement statement;
+		long count;
+		int quota=0;
+		Entertainment e = null;
+		try {
+			e = new Entertainment(eid);
+		} catch (GetEntertainmentException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return "Could not find Entertainment with ID: " + eid;
+		}
+
+		Calendar calendar;
+		Date now;
+		Timestamp currentTimestamp;
+		
+		connection = connect.connect();
+		try
+		{
+			statement = connection.prepareStatement("SELECT total_quota FROM Sub_Plan WHERE level_id = ?");
+			statement.clearParameters();
+			System.out.println(this.subPlan);
+			statement.setInt(1, this.subPlan);
+			
+			ResultSet resultSet = statement.executeQuery();
+			
+			if(resultSet.next()){
+				quota = resultSet.getInt("total_quota");
+				System.out.println("Quote: " + quota);
+			}
+			else{
+				System.out.println("Failed to get quota.");
+			}
+				
+			statement = connection.prepareStatement("SELECT COUNT(*) AS numRented "
+					+ "FROM (SELECT * "
+					+ "FROM sys.Rent_History R "
+					+ "WHERE R.time_returned IS NULL AND R.user_email = ?) R2 "
+					+ "GROUP BY R2.user_email");
+			
+			statement.clearParameters();
+			statement.setString(1, this.email);
+			
+			resultSet = statement.executeQuery();
+					
+			if(resultSet.next())
+			{
+				count = resultSet.getLong("numRented");
+
+				if(count < quota)
+				{
+					calendar = Calendar.getInstance();
+					now = calendar.getTime();
+					currentTimestamp = new Timestamp(now.getTime());
+					
+					statement = connection.prepareStatement("INSERT INTO Rent_History VALUES(0,?,?,?,null)");
+					
+					statement.clearParameters();
+					statement.setInt(1, e.getEID());
+					statement.setString(2, this.email);
+					statement.setTimestamp(3, currentTimestamp);
+					
+					statement.executeUpdate();
+					
+					 e.removeOneFromStock();
+				}
+				else{
+					connect.disconnect(connection);
+					return "You've reached your maximun amount of rentals.";
+				}
+					
+			}
+			else
+			{
+				calendar = Calendar.getInstance();
+				now = calendar.getTime();
+				currentTimestamp = new Timestamp(now.getTime());
+				
+				statement = connection.prepareStatement("INSERT INTO Rent_History VALUES(0,?,?,?,'0000-00-00 00:00:00')");
+				
+				statement.clearParameters();
+				statement.setInt(1, e.getEID());
+				statement.setString(2, this.email);
+				statement.setTimestamp(3, currentTimestamp);
+				
+				statement.executeUpdate();
+				
+				e.removeOneFromStock();
+			}
+			
+			statement.close();
+			resultSet.close();
+			connect.disconnect(connection);
+			return e.title + " was rented.";
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			return "Failed to rent entertainment with ID: " + eid;
+		}
+	}	
 	
 	public void changeName(String name)
 	{
