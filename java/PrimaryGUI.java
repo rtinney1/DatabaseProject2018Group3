@@ -288,8 +288,8 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, W
 			}
 		}
 		
-		else if (e.getActionCommand().equals("EUSER")){
-			
+		else if (e.getActionCommand().equals("MYINFO")){
+			RegHub changeRegHub = new RegHub(currentUser);	
 		}
 	}//end actionPerformed() method
 	

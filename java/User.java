@@ -300,6 +300,37 @@ public class User
 		return zip;
 	}
 	
+	public String getPass(){
+		Statement statement;
+		String pass = null;
+		
+		try
+		{
+			connection = connect.connect();
+			statement = connection.createStatement();
+			
+			ResultSet resultSet = statement.executeQuery("SELECT U.pass "
+					+ "FROM Users U "
+					+ "WHERE user_email = '" + email + "'");
+			
+	         // process query results
+			if(resultSet.next()){
+				pass = (String)resultSet.getObject(1);				
+			}
+
+			resultSet.close();
+	        statement.close();
+			connect.disconnect(connection);
+			return pass;
+		}
+		catch(Exception e)
+		{
+			connect.disconnect(connection);
+			e.printStackTrace();
+			return pass;
+		}
+	}
+	
 	
 	public int getUserLvl()
 	{
@@ -453,7 +484,7 @@ public class User
 		}
 	}	
 	
-	public void changeName(String name)
+	public boolean changeName(String name)
 	{
 		Statement statement;
 		
@@ -468,15 +499,16 @@ public class User
 			
 	        statement.close();
 			connect.disconnect(connection);
+			return true;
 		}
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
-			
+			return false;
 		}
 	}
 	
-	public void changeUserLvl(int userLvl)
+	public boolean changeUserLvl(int userLvl)
 	{
 		Statement statement;
 		
@@ -489,15 +521,16 @@ public class User
 
 	        statement.close();
 			connect.disconnect(connection);
+			return true;
 		}
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
-			
+			return false;
 		}
 	}
 	
-	public void changePassword(String pass)
+	public boolean changePassword(String pass)
 	{
 		Statement statement;
 		
@@ -510,15 +543,16 @@ public class User
 
 	        statement.close();
 			connect.disconnect(connection);
+			return true;
 		}
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
-			
+			return false;
 		}
 	}
 	
-	public void changePhone(String phone)
+	public boolean changePhone(String phone)
 	{
 		Statement statement;
 		
@@ -533,15 +567,16 @@ public class User
 			
 	        statement.close();
 			connect.disconnect(connection);
+			return true;
 		}
 		catch(Exception e)
 		{
-			connect.disconnect(connection);
-			
+			connect.disconnect(connection);	
+			return false;
 		}
 	}
 	
-	public void changeAddress(String street, String city, String state, int zip)
+	public boolean changeAddress(String street, String city, String state, int zip)
 	{
 		int aid = 0;
 		
@@ -570,6 +605,7 @@ public class User
 				resultSet.close();
 		        statement.close();
 				connect.disconnect(connection);
+				return true;
 			}
 			else
 			{
@@ -593,12 +629,14 @@ public class User
 				resultSet.close();
 		        statement.close();
 				connect.disconnect(connection);
+				return true;
 			}
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 			connect.disconnect(connection);
+			return false;
 		}
 	}
 	
