@@ -1,7 +1,7 @@
-INSERT INTO Sub_Plan VALUES (1, 9);
-INSERT INTO Sub_Plan VALUES (2, 7);
-INSERT INTO Sub_Plan VALUES (3, 5);
-INSERT INTO Sub_Plan VALUES (4, 3);
+INSERT INTO Sub_Plan VALUES (4, 9);
+INSERT INTO Sub_Plan VALUES (3, 7);
+INSERT INTO Sub_Plan VALUES (2, 5);
+INSERT INTO Sub_Plan VALUES (1, 3);
 
 INSERT INTO Address VALUES (0, 'WV', 'Fairmont', '123 Easy St', 26501);
 INSERT INTO Address VALUES (0, 'NY', 'New York City', 'Main St', 90121);
