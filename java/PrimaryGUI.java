@@ -34,7 +34,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 	JTable tableViewer;
 	
 	JPanel memberFieldPanel, memberPanel, memberDataPanel, memberTopPanel, searchPanel, radButtonPanel, cBoxPanel;
-	JButton search, clear, rentButton, sequalButton, userHistoryButton, adminGetLast24Button, adminGetTop10Button;
+	JButton search, clear, rentButton, sequalButton, userHistoryButton, adminGetLast24Button, adminGetTop10Button, logoutButton;
 	JLabel searchLabel;
 	JTextField searchField;
 	
@@ -93,6 +93,11 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 		register = new JButton("Register");
 		register.setActionCommand("REGISTER");
 		register.addActionListener(this);
+		
+		logoutButton = new JButton("Logout");
+		logoutButton.setActionCommand("LOGOUT");
+		logoutButton.addActionListener(this);
+		
 		
 		search = new JButton("Search");
 		search.setActionCommand("SEARCH");
@@ -309,12 +314,28 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 			JOptionPane.showMessageDialog(this, scrollPane, currentUser.getName() + "'s Rent History", JOptionPane.INFORMATION_MESSAGE);
 		}
 	
-		/*
-		else if (e.getActionCommand().equals("MYINFO"))
+		
+		else if (e.getActionCommand().equals("LOGOUT"))
 		{
-			new MyInfo(this);
+			username = "";
+			password = "";
+			
+			passField.setText("");
+			userField.setText("");
+			
+			setVisible(false);
+			cp.removeAll();
+			
+			cp.add(Box.createRigidArea(new Dimension(50,0)), BorderLayout.WEST);
+			cp.add(Box.createRigidArea(new Dimension(50,0)), BorderLayout.EAST);
+			cp.add(Box.createRigidArea(new Dimension(0,25)), BorderLayout.NORTH);
+			cp.add(loginPanel, BorderLayout.CENTER);
+			
+			rootPane.setDefaultButton(login);
+			
+			setupMainFrame();
 		}
-		*/
+		
 		else if (e.getActionCommand().equals("ADMIN_GET_24")){
 			DefaultTableModel tableModel = currentUser.adminGetLast24Hours();
 			
@@ -356,6 +377,9 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 		setLocationRelativeTo(null);
 		
 		cp.removeAll();
+		srButtonPanel.removeAll();
+		adminSouthPanel.removeAll();
+		
 		cp.add(memberTopPanel, BorderLayout.NORTH);
 		cp.add(memberDataPanel, BorderLayout.CENTER);
 		setJMenuBar(newMenuBar());
@@ -363,17 +387,23 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 		if (!adminStatus) //set up GUI for non-admin user
 		{
 			rentButton.setEnabled(true);
+			srButtonPanel.add(logoutButton);
+			srButtonPanel.add(Box.createRigidArea(new Dimension(140,0)));
 			srButtonPanel.add(rentButton);
 			srButtonPanel.add(sequalButton);
+			srButtonPanel.add(Box.createRigidArea(new Dimension(150,0)));
 			cp.add(srButtonPanel, BorderLayout.SOUTH);
 		}
 		else  //set up GUI for admin purposes
 		{
-			adminSouthPanel.add(Box.createRigidArea(new Dimension(230,0)));
+			rentButton.setEnabled(false);
+			adminSouthPanel.add(logoutButton);
+			adminSouthPanel.add(Box.createRigidArea(new Dimension(160,0)));
 			adminSouthPanel.add(rentButton);
 			adminSouthPanel.add(sequalButton);
 			adminSouthPanel.add(Box.createRigidArea(new Dimension(50,0)));
 			adminSouthPanel.add(adminSwitchPanel);
+			adminSouthPanel.add(Box.createRigidArea(new Dimension(20,0)));
 			cp.add(adminSouthPanel, BorderLayout.SOUTH);
 		}
 		rootPane.setDefaultButton(search);
