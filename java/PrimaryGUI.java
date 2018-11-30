@@ -347,6 +347,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 			
 			setVisible(false);
 			cp.removeAll();
+			setJMenuBar(null);
 			
 			cp.add(Box.createRigidArea(new Dimension(50,0)), BorderLayout.WEST);
 			cp.add(Box.createRigidArea(new Dimension(50,0)), BorderLayout.EAST);
