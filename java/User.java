@@ -661,50 +661,37 @@ public class User
 		}
 	}
 	
-	public ArrayList<User> getArrayListOfAllItems()
+	static public DefaultTableModel getArrayListOfAllItems()
 	{
-		ArrayList<User> list = new ArrayList<User>();
 		Statement statement;
-		boolean a;
-		
-		connection = connect.connect();
+		Connect connect = new Connect();
+		Connection connection = connect.connect();
 		
 		try
 		{
 			statement = connection.createStatement();
 			
-			ResultSet resultSet = statement.executeQuery("SELECT *" + 
+			ResultSet resultSet = statement.executeQuery("SELECT U.user_email AS 'Email', U.name AS 'Name', U.phone AS 'Phone', A.street AS 'Street',"
+					+ "A.city AS 'City', A.state AS 'State', A.zip AS 'Zip' " + 
 										 "FROM Users U " + 
 										 "INNER JOIN Address A on U.aid = A.aid");
-			while(resultSet.next())
-			{
-				street = (String)resultSet.getObject(11);
-				city = (String)resultSet.getObject(10);
-				state = (String)resultSet.getObject(9);
-				zip = (int)resultSet.getObject(12);
-				
-				if((int)resultSet.getObject(6) == 0)
-					a = false;
-				else
-					a = true;
-				
-				list.add(new User((String)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(4), street, city, state, zip, a));
-			}
+			
+			DefaultTableModel tableModel = TableModelUtil.buildTableModel(resultSet);
 			
 			resultSet.close();
 			statement.close();
 			connect.disconnect(connection);
-			return list;
+			return tableModel;
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 			connect.disconnect(connection);
-			return list;
+			return null;
 		}
 	}
 	
-	public void removeUser()
+	public String removeUser()
 	{
 		Statement statement;
 		try
@@ -717,11 +704,13 @@ public class User
 			
 			statement.close();
 			connect.disconnect(connection);
+			return "Succesfully removed user: " + this.email;
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 			connect.disconnect(connection);
+			return "Failed to remove user: " + this.email;
 		}
 	}
 	

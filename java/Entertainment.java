@@ -124,43 +124,36 @@ public class Entertainment
 	 * Will throw either AddEntertainmentException or GetEntertainmentException depending on
 	 * if you are adding or getting
 	 */
-	public Entertainment
-			(boolean add, String title, String releaseDate, String genre, 
-					int numInStock, Entertainment sequal, String platform, String versionNum)
-						throws AddEntertainmentException, GetEntertainmentException
-	{
-		connect = new Connect();
-		
-		if(add)
-		{
-			if(!add(title, releaseDate, genre, numInStock, sequal, platform, versionNum))
-				throw new AddEntertainmentException("Entertainment couldn't be added");
-		}
-		else
-		{
-			if(!get(title, releaseDate, genre, numInStock, sequal, platform, versionNum))
-				throw new GetEntertainmentException("Entertainment does not exist");
-		}
-	}
+//	public Entertainment
+//			(boolean add, String title, String releaseDate, String genre, 
+//					int numInStock, Entertainment sequal, String platform, String versionNum)
+//						throws AddEntertainmentException, GetEntertainmentException
+//	{
+//		connect = new Connect();
+//		
+//		if(add)
+//		{
+//			if(!add(title, releaseDate, genre, numInStock, sequal, platform, versionNum))
+//				throw new AddEntertainmentException("Entertainment couldn't be added");
+//		}
+//		else
+//		{
+//			if(!get(title, releaseDate, genre, numInStock, sequal, platform, versionNum))
+//				throw new GetEntertainmentException("Entertainment does not exist");
+//		}
+//	}
 	
 	/*boolean add(String title, String releaseDate, String genre, 
 	 *		int numInStock, Entertainment sequal, String platform, String versionNum)
 	 *Adds the entertainment to the database based on all of its information 
 	 */
-	public boolean add(String title, String releaseDate, String genre, 
-			int numInStock, Entertainment sequal, String platform, String versionNum)
+	public String add(String title, String releaseDate, String genre, 
+			int numInStock, int sequalId, String platform, String versionNum)
 	{
 		PreparedStatement statement;
-		int sid = 0;
 		connection = connect.connect();
 		try
-		{
-
-			if(sequal.getEID() == 0)
-				sid = 0;
-			else
-				sid = sequal.getEID();
-			
+		{	
 			statement = connection.prepareStatement("SELECT * "
 					+ "FROM Entertainment E "
 					+ "WHERE E.title = ? AND E.release_date = ? AND E.genre = ? AND num_in_stock = ? AND "
@@ -171,7 +164,7 @@ public class Entertainment
 			statement.setString(2, releaseDate);
 			statement.setString(3, genre);
 			statement.setInt(4, numInStock);
-			statement.setInt(5, sid);
+			statement.setInt(5, sequalId);
 			statement.setString(6, platform);
 			statement.setString(7, versionNum);
 			
@@ -183,7 +176,7 @@ public class Entertainment
 				resultSet.close();
 			    statement.close();
 				connect.disconnect(connection);
-	        	return false;
+	        	return "[Error]: Could not add '" + title + "', as it already exists.";
 	         }
 	         else
 	         {
@@ -194,7 +187,7 @@ public class Entertainment
 	 			statement.setString(2, releaseDate);
 	 			statement.setString(3, genre);
 	 			statement.setInt(4, numInStock);
-	 			statement.setInt(5, sid);
+	 			statement.setInt(5, sequalId);
 	 			statement.setString(6, platform);
 	 			statement.setString(7, versionNum);
 	 			
@@ -205,7 +198,7 @@ public class Entertainment
 				this.releaseDate = releaseDate;
 				this.genre = genre;
 				this.numInStock = numInStock;
-				this.sequalID = sequal.getEID();
+				this.sequalID = sequalId;
 				this.platform = platform;
 				this.versionNum = versionNum;
 				
@@ -221,14 +214,14 @@ public class Entertainment
 				resultSet.close();
 			    statement.close();
 				connect.disconnect(connection);
-		        return true;
+		        return "Succesfully added '" + title + "'.";
 	        }//end of else
 		}//end try
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
 			e.printStackTrace();
-			return false;
+			return "[Error] Failed to add '" + title + "'.";
 		}
 	}
 	
@@ -488,7 +481,7 @@ public class Entertainment
 					// Building the select query to include all sequel id checks
 					String query = "SELECT eid AS 'ID', title AS 'Title', "
 					+ "release_date AS 'Release Date', genre AS 'Genre', "
-					+ "num_in_stock AS 'Stock', awards_won AS 'Awards Won', "
+					+ "num_in_stock AS 'Stock', "
 					+ "sequal_id AS 'Sequel ID', platform AS 'Platform', version AS 'Version' "
 					+ "FROM Entertainment E WHERE ";
 					int count = 0;
@@ -612,7 +605,7 @@ public class Entertainment
 	 * Accesses the database to change the title of the
 	 * entertainment
 	 */
-	public void changeTitle(String title)
+	public String changeTitle(String title)
 	{
 		PreparedStatement statement;
 		
@@ -629,10 +622,12 @@ public class Entertainment
 			
 	        statement.close();
 			connect.disconnect(connection);
+			return "Successfully updated title.";
 		}
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
+			return "Failed to updated title.";
 			
 		}
 	}
@@ -641,7 +636,7 @@ public class Entertainment
 	 * Accesses the database to change the release date of
 	 * the entertainment
 	 */
-	public void changeReleaseDate(String releaseDate)
+	public String changeReleaseDate(String releaseDate)
 	{
 		PreparedStatement statement;
 		
@@ -658,11 +653,12 @@ public class Entertainment
 			
 	        statement.close();
 			connect.disconnect(connection);
+			return "Successfully updated release date.";
 		}
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
-			
+			return "Failed to updated release date.";
 		}
 	}
 	
@@ -670,7 +666,7 @@ public class Entertainment
 	 * Accesses the database to change the genre of the
 	 * entertainment
 	 */
-	public void changeGenre(String genre)
+	public String changeGenre(String genre)
 	{
 		PreparedStatement statement;
 		
@@ -687,11 +683,12 @@ public class Entertainment
 			
 	        statement.close();
 			connect.disconnect(connection);
+			return "Successfully updated genre.";
 		}
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
-			
+			return "Failed to updated genre.";
 		}
 	}
 	
@@ -780,7 +777,7 @@ public class Entertainment
 	 * Accesses the database to change the total number
 	 * of entertainment in stock
 	 */
-	public void changeNumOfStock(int newStockNum)
+	public String changeNumOfStock(int newStockNum)
 	{
 		PreparedStatement statement;
 		
@@ -797,11 +794,12 @@ public class Entertainment
 			
 	        statement.close();
 			connect.disconnect(connection);
+			return "Successfully updated stock.";
 		}
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
-			
+			return "Failed to update the stock.";
 		}
 	}
 	
@@ -866,7 +864,7 @@ public class Entertainment
 	/*boolean addSequal(intt sequalID)
 	 * Accesses the database to add a sequal to the entertainment
 	 */
-	public boolean addSequal(int sequalID)
+	public String addSequal(int sequalID)
 	{
 		try
 		{
@@ -882,11 +880,11 @@ public class Entertainment
 			
 			statement.close();
 			connect.disconnect(connection);
-			return true;
+			return "Successfully added sequel.";
 		}
 		catch(Exception e)
 		{
-			return false;
+			return "Failed to add sequel.";
 		}
 		
 	}
@@ -895,37 +893,37 @@ public class Entertainment
 					int numInStock, Entertainment sequalID, String platform, String versionNum)
 	 * Accesses the database to add a sequal to the entertainment
 	 */
-	public boolean addSequal(String title, String releaseDate, String genre, 
-					int numInStock, Entertainment sequalID, String platform, String versionNum)
-	{
-		try
-		{
-			Entertainment sequal = new Entertainment(false, title, releaseDate, genre, numInStock,
-					sequalID, platform, versionNum);//just to see if the sequal exists
-			Statement statement;
-			
-			connection = connect.connect();
-			statement = connection.createStatement();
-			
-			int id = sequal.getSequalID();
-			
-			statement.executeUpdate("UPDATE Entertainment SET sequal_id = " + id + " WHERE eid = " + eid);
-			
-			this.sequalID = id;
-			
-			statement.close();
-			connect.disconnect(connection);
-			return true;
-		}
-		catch(GetEntertainmentException e)
-		{
-			return false;
-		}
-		catch(Exception e)
-		{
-			return false;
-		}
-	}
+//	public boolean addSequal(String title, String releaseDate, String genre, 
+//					int numInStock, Entertainment sequalID, String platform, String versionNum)
+//	{
+//		try
+//		{
+//			Entertainment sequal = new Entertainment(false, title, releaseDate, genre, numInStock,
+//					sequalID, platform, versionNum);//just to see if the sequal exists
+//			Statement statement;
+//			
+//			connection = connect.connect();
+//			statement = connection.createStatement();
+//			
+//			int id = sequal.getSequalID();
+//			
+//			statement.executeUpdate("UPDATE Entertainment SET sequal_id = " + id + " WHERE eid = " + eid);
+//			
+//			this.sequalID = id;
+//			
+//			statement.close();
+//			connect.disconnect(connection);
+//			return true;
+//		}
+//		catch(GetEntertainmentException e)
+//		{
+//			return false;
+//		}
+//		catch(Exception e)
+//		{
+//			return false;
+//		}
+//	}
 	
 	/*void removeSequal()
 	 *Accesses the database to remove the sequal from the entertainment
@@ -956,7 +954,7 @@ public class Entertainment
 	/*void changePlatform(String platform)
 	 * Accesses the database to change the platform of the entertainment
 	 */
-	public void changePlatform(String platform)
+	public String changePlatform(String platform)
 	{
 		PreparedStatement statement;
 		
@@ -973,18 +971,19 @@ public class Entertainment
 			
 	        statement.close();
 			connect.disconnect(connection);
+			return "Successfully updated platform.";
 		}
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
-			
+			return "Failed to updated platform.";
 		}
 	}
 	
 	/*void changeVersionNum(String versionNum)
 	 * Accesses the database to change the versionNum of the entertainment
 	 */
-	public void changeVersionNum(String versionNum)
+	public String changeVersionNum(String versionNum)
 	{
 		PreparedStatement statement;
 		
@@ -1001,11 +1000,12 @@ public class Entertainment
 			
 	        statement.close();
 			connect.disconnect(connection);
+			return "Successfully updated version.";
 		}
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
-			
+			return "Failed to updated version.";
 		}
 	}
 	
@@ -1122,7 +1122,7 @@ public class Entertainment
 	/*void removeEntertainment()
 	 * Accesses the database and removes the entertainment
 	 */
-	public void removeEntertainment()
+	public String removeEntertainment()
 	{
 		Statement statement;
 		
@@ -1136,11 +1136,13 @@ public class Entertainment
 			
 			statement.close();
 			connect.disconnect(connection);
+			return "Successfuly removed: " + this.title;
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 			connect.disconnect(connection);
+			return "Failed to remove: " + this.title;
 		}
 	}
 	
@@ -1197,7 +1199,7 @@ public class Entertainment
 	 * Then accesses the database to add each CastMember
 	 * to the entertainment under Worked_In
 	 */
-	public void addCastMembers(ArrayList<CastMember> cml)
+	public String addCastMembers(ArrayList<CastMember> cml)
 	{
 		connection = connect.connect();
 		Statement statement;
@@ -1207,19 +1209,28 @@ public class Entertainment
 		{
 			statement = connection.createStatement();
 			
+			statement.executeUpdate("DELETE FROM Worked_In WHERE eid = " + eid);
+			
 			for(int i = 0; i < cml.size(); i++)
 			{
-				cid = cml.get(i).getCID();
-				statement.executeUpdate("INSERT INTO Worked_In VALUES(" + cid + "," + eid + ")");
+				ResultSet resultSet = statement.executeQuery("SELECT * FROM Worked_In W WHERE W.cid = " + cml.get(i).getCID() + " AND W.eid = " + eid);
+				if (!resultSet.next()){
+					System.out.println("Adding cast to worked in.");
+					cid = cml.get(i).getCID();
+					statement.executeUpdate("INSERT INTO Worked_In VALUES(" + cid + "," + eid + ")");
+				}
+				resultSet.close();
 			}
 			
 			statement.close();
 			connect.disconnect(connection);
+			return "Successfully added cast members.";
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 			connect.disconnect(connection);
+			return "Failed to add cast members.";
 		}
 	}
 	

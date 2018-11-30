@@ -1,6 +1,8 @@
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+
 import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
 
@@ -29,8 +31,8 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, W
 	JScrollPane scroller;
 	JTable tableViewer;
 	
-	JPanel memberFieldPanel, memberPanel, memberDataPanel, memberTopPanel, searchPanel, radButtonPanel, cBoxPanel;
-	JButton search, clear, rentButton, sequalButton, userHistoryButton, adminGetLast24Button, adminGetTop10Button;
+	JPanel memberFieldPanel, memberPanel, memberDataPanel, movieDataPanel, memberTopPanel, searchPanel, radButtonPanel, cBoxPanel;
+	JButton search, clear, rentButton, sequalButton, userHistoryButton, adminGetLast24Button, adminGetTop10Button, removeButton, updateButton;
 	JLabel searchLabel;
 	JTextField searchField;
 	
@@ -48,6 +50,8 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, W
 	JTextField userField;
 	JPasswordField passField;
 	
+	JLabel castLabel, directorLabel, awardsLabel, sequalLabel;
+	
 	User currentUser;
 	RegHub mainRegHub;
 	//-----------------------------------------------------------------------------
@@ -59,7 +63,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, W
 		d = tk.getScreenSize();
 		
 		memberTopPanel = new JPanel(new GridLayout(4, 1));
-		memberDataPanel = new JPanel(new BorderLayout());
+		memberDataPanel = new JPanel(new GridLayout(2, 1));
 		//memberPanel = new JPanel(new BorderLayout());
 		memberFieldPanel = new JPanel();
 		srButtonPanel = new JPanel();
@@ -71,6 +75,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, W
 		logButtonPanel = new JPanel();
 		radButtonPanel = new JPanel();
 		cBoxPanel = new JPanel();
+		movieDataPanel = new JPanel(new GridLayout(4, 1));
 		
 		radGroup = new ButtonGroup();
 				
@@ -96,6 +101,16 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, W
 		rentButton.addActionListener(this);
 		rentButton.setEnabled(false);
 		
+		removeButton = new JButton("Remove");
+		removeButton.addActionListener(this);
+		removeButton.setActionCommand("REMOVE");
+		removeButton.setEnabled(false);
+		
+		updateButton = new JButton("Update");
+		updateButton.addActionListener(this);
+		updateButton.setActionCommand("UPDATE");
+		updateButton.setEnabled(false);
+		
 		sequalButton = new JButton("Get Sequals");
 		sequalButton.setActionCommand("SEQUALS");
 		sequalButton.addActionListener(this);
@@ -104,6 +119,11 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, W
 		userLabel = new JLabel("Username:");
 		passLabel = new JLabel("Password:");
 		searchLabel = new JLabel("Search: ");
+		
+		sequalLabel = new JLabel("Sequal: ");
+		castLabel = new JLabel("Cast: ");
+		directorLabel = new JLabel("Director: ");
+		awardsLabel = new JLabel("Awards: ");
 		
 		userField = new JTextField();
 		userField.setPreferredSize(new Dimension(120, 25));
@@ -156,15 +176,23 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, W
 		
 		srButtonPanel.add(rentButton);
 		srButtonPanel.add(sequalButton);
+		srButtonPanel.add(removeButton);
+		srButtonPanel.add(updateButton);
 		
 		sPane = new JScrollPane(dataTable);
+		
+		movieDataPanel.add(sequalLabel);
+		movieDataPanel.add(directorLabel);
+		movieDataPanel.add(castLabel);
+		movieDataPanel.add(awardsLabel);
 		
 		memberFieldPanel.add(searchLabel);
 		memberFieldPanel.add(searchField);
 		memberFieldPanel.add(comboBox);
 		
-		memberDataPanel.add(sPane, BorderLayout.CENTER);
-		 
+		memberDataPanel.add(sPane);
+		memberDataPanel.add(movieDataPanel);
+		
 		memberTopPanel.add(memberFieldPanel);
 		memberTopPanel.add(radButtonPanel);
 		memberTopPanel.add(cBoxPanel);
@@ -206,31 +234,13 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, W
 		}//end logon conditional
 		
 		else if (e.getActionCommand().equals("SEARCH")){
-			sequalButton.setEnabled(false);
-			rentButton.setEnabled(false);
-			String searchTerm = searchField.getText().trim();
-			String searchBy = comboBox.getSelectedItem().toString().toUpperCase();
-			if (searchTerm.length() == 0){
-				searchTerm = "%";
-			}
-			Entertainment entertainment = new Entertainment();
-			String userEmail = null;
-			if (newToMe.isSelected())
-				userEmail = currentUser.getEmail();
-			DefaultTableModel tableModel = entertainment.searchBy(searchTerm, searchBy, userEmail, awardWinner.isSelected(), gameRad.isSelected(), movRad.isSelected());
-
-			memberDataPanel.removeAll();
-			dataTable = new JTable(tableModel);
-			dataTable.getSelectionModel().addListSelectionListener(this);
-			JScrollPane newPane = new JScrollPane(dataTable);
-			newPane.setPreferredSize(new Dimension(500, 200));
-			memberDataPanel.add(newPane, BorderLayout.CENTER);
-			memberDataPanel.revalidate();
-			memberDataPanel.repaint();
+			search();
 		}
 		
 		else if (e.getActionCommand().equals("SEQUALS")){
 			sequalButton.setEnabled(false);
+			rentButton.setEnabled(false);
+			removeButton.setEnabled(false);
 			String eid = dataTable.getValueAt(dataTable.getSelectedRow(), 0).toString();
 			System.out.println("Find sequals with this EID: " + eid);
 			
@@ -242,7 +252,8 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, W
 			dataTable.getSelectionModel().addListSelectionListener(this);
 			JScrollPane newPane = new JScrollPane(dataTable);
 			newPane.setPreferredSize(new Dimension(500, 200));
-			memberDataPanel.add(newPane, BorderLayout.CENTER);
+			memberDataPanel.add(newPane);
+			memberDataPanel.add(movieDataPanel);
 			memberDataPanel.revalidate();
 			memberDataPanel.repaint();
 		}
@@ -291,16 +302,86 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, W
 		else if (e.getActionCommand().equals("MYINFO")){
 			RegHub changeRegHub = new RegHub(currentUser);	
 		}
+		
+		else if (e.getActionCommand().equals("INVENTORY")){
+			AddInventoryDialog addInventoryDialog = new AddInventoryDialog();
+		}
+		
+		else if (e.getActionCommand().equals("REMOVE")){
+			try {
+				int eid = (int) dataTable.getValueAt(dataTable.getSelectedRow(), 0);
+				Entertainment entertainment = new Entertainment(eid);
+				String statusMsg = entertainment.removeEntertainment();
+				JOptionPane.showMessageDialog(this, statusMsg);
+				search();
+			} catch (GetEntertainmentException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		
+		else if (e.getActionCommand().equals("UPDATE")){
+			try {
+				int eid = (int) dataTable.getValueAt(dataTable.getSelectedRow(), 0);
+				Entertainment entertainment = new Entertainment(eid);
+				AddInventoryDialog addInventoryDialog = new AddInventoryDialog(entertainment);
+			} catch (GetEntertainmentException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		
+		else if (e.getActionCommand().equals("EUSER")){
+			UserManagementDialog userManagementDialog = new UserManagementDialog();
+		}
 	}//end actionPerformed() method
 	
 	@Override
 	public void valueChanged(ListSelectionEvent arg0) {
-		System.out.println(dataTable.getValueAt(dataTable.getSelectedRow(), dataTable.getSelectedColumn()).toString());
+		System.out.println(dataTable.getValueAt(dataTable.getSelectedRow(), 0).toString());
+		int eid = (int)dataTable.getValueAt(dataTable.getSelectedRow(), 0);
 		SwingUtilities.invokeLater( 
 	        new Runnable() {
 	            public void run() {
+	            	try {
+						Entertainment entertainment = new Entertainment(eid);
+						String sequalTitle = entertainment.getSequal().getTitle();
+						if (sequalTitle != null)
+							sequalLabel.setText("Sequal: " + entertainment.getSequal().getTitle());
+						else
+							sequalLabel.setText("Sequal: NONE");
+						sequalLabel.repaint();
+						sequalLabel.revalidate();
+						
+						ArrayList<CastMember> castList = entertainment.getCastMembers();
+						String castLabelText = "Cast: ";
+						String directorLabelText = "Director: ";
+						for (int i = 0; i < castList.size()-1; i++) {
+							if (castList.get(i).director){
+								directorLabelText += castList.get(i).getName() + " ";
+							}
+							else
+								castLabelText += castList.get(i).getName() + ", ";
+						}
+						if (castList.size() > 0)
+							castLabelText += castList.get(castList.size()-1).getName();
+						castLabel.setText(castLabelText);
+						castLabel.repaint();
+						castLabel.revalidate();
+						directorLabel.setText(directorLabelText);
+						directorLabel.repaint();
+						directorLabel.revalidate();
+						
+					} catch (GetEntertainmentException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 	                sequalButton.setEnabled(true);
 	                rentButton.setEnabled(true);
+	                removeButton.setEnabled(true);
+	                updateButton.setEnabled(true);
+	                
+	                
 	            }
 	        }
 	    );
@@ -324,12 +405,13 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, W
 		
 		setTitle("Movies-R-Us");
 		setVisible(true);
+		search();
 	}//end doLogin() method
 	
 	//-----------------------------------------------------------------------------
 	public void doRegister()
 	{
-		mainRegHub = new RegHub(this);
+		mainRegHub = new RegHub();
 		mainRegHub.addWindowListener(this);
 	}//end doRegister() method
 	
@@ -363,7 +445,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, W
 
 				subMenu.setMnemonic(KeyEvent.VK_A);
 				subMenu.setToolTipText("Admin. operations");
-				subMenu.add(newItem("Edit User", "EUSER", this, KeyEvent.VK_U, KeyEvent.VK_U, "Access and edit a users information."));
+				subMenu.add(newItem("Edit Users", "EUSER", this, KeyEvent.VK_U, KeyEvent.VK_U, "Access and edit a users information."));
 				subMenu.add(newItem("Add Invetory", "INVENTORY", this, KeyEvent.VK_I, KeyEvent.VK_I, "Add a new movie or game to the inventory."));
 				subMenu.add(newItem("24 Hour Recap", "ADMIN_GET_24", this, KeyEvent.VK_H, KeyEvent.VK_H, "See movies rented in the last 24 hours."));
 				subMenu.add(newItem("Top 10", "ADMIN_GET_TOP_10", this, KeyEvent.VK_T, KeyEvent.VK_T, "See to 10 rented items."));
@@ -412,6 +494,32 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, W
 			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	private void search(){
+		sequalButton.setEnabled(false);
+		rentButton.setEnabled(false);
+		removeButton.setEnabled(false);
+		String searchTerm = searchField.getText().trim();
+		String searchBy = comboBox.getSelectedItem().toString().toUpperCase();
+		if (searchTerm.length() == 0){
+			searchTerm = "%";
+		}
+		Entertainment entertainment = new Entertainment();
+		String userEmail = null;
+		if (newToMe.isSelected())
+			userEmail = currentUser.getEmail();
+		DefaultTableModel tableModel = entertainment.searchBy(searchTerm, searchBy, userEmail, awardWinner.isSelected(), gameRad.isSelected(), movRad.isSelected());
+
+		memberDataPanel.removeAll();
+		dataTable = new JTable(tableModel);
+		dataTable.getSelectionModel().addListSelectionListener(this);
+		JScrollPane newPane = new JScrollPane(dataTable);
+		newPane.setPreferredSize(new Dimension(500, 200));
+		memberDataPanel.add(newPane);
+		memberDataPanel.add(movieDataPanel);
+		memberDataPanel.revalidate();
+		memberDataPanel.repaint();
 	}
 
 	@Override

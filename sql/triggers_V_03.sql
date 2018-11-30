@@ -27,36 +27,6 @@ CREATE TRIGGER RetTimeTrigger
 DELIMITER ;
 
 DELIMITER $$
-CREATE TRIGGER DeleteAwardTrigger
-	AFTER DELETE
-		ON Won FOR EACH ROW
-	BEGIN
-		DECLARE awardCount INT(1);
-		
-        SELECT COUNT(W.eid) INTO awardCount FROM Won W WHERE W.awardID = OLD.awardID;
-        
-        IF(awardCount = 0) THEN
-			 DELETE FROM Awards WHERE awardID = OLD.awardID;
-		END IF;
-    END$$
-DELIMITER ;
-
-DELIMITER $$
-CREATE TRIGGER DeleteCastMemberTrigger
-	AFTER DELETE
-		ON Worked_In FOR EACH ROW
-	BEGIN
-		DECLARE cmCount INT(1);
-		
-        SELECT COUNT(W.eid) INTO cmCount FROM Worked_In W WHERE W.cid = OLD.cid;
-        
-        IF(cmCount = 0) THEN
-			 DELETE FROM Cast_Member WHERE cid = OLD.cid;
-		END IF;
-    END$$
-DELIMITER ;
-
-DELIMITER $$
 CREATE TRIGGER DeleteAddressUsersTrigger
 	AFTER UPDATE
 		ON Users FOR EACH ROW

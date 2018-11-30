@@ -35,9 +35,8 @@ public class RegHub extends JDialog implements WindowListener,
 	
 	ArrayList<String> stateList;
 	//====================RegHub() constructor===================================================
-	public RegHub(MainGUI parentGUI)
+	public RegHub()
 	{
-		this.parentGUI = parentGUI;
 		Container pane = new Container();
 		String[] plans = {"-Please Selecta Plan-", "Tri-Star Plan (max 3 rentals at a time)", "Columbia Plan (max 5 rentals at a time)",
 									 "Paramount Plan (max 7 rentals at a time)", "Universal Plan (max 9 rentals at a time)"};
@@ -186,6 +185,7 @@ public class RegHub extends JDialog implements WindowListener,
 		nameField.setMaximumSize(new Dimension(300, 25));
 		emailField = new JTextField(currentUser.getEmail());
 		emailField.setMaximumSize(new Dimension(300, 25));
+		emailField.setEnabled(false);
 		addressField_1 = new JTextField(currentUser.getStreet());
 		addressField_1.setMaximumSize(new Dimension(300, 25));
 		addressField_2 = new JTextField();
