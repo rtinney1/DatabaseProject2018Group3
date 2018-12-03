@@ -309,6 +309,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 			sequalButton.setEnabled(false);
 			rentButton.setEnabled(false);
 			removeButton.setEnabled(false);
+			updateButton.setEnabled(false);
 			String eid = dataTable.getValueAt(dataTable.getSelectedRow(), 0).toString();
 			System.out.println("Find sequals with this EID: " + eid);
 			
@@ -632,6 +633,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 		sequalButton.setEnabled(false);
 		rentButton.setEnabled(false);
 		removeButton.setEnabled(false);
+		updateButton.setEnabled(false);
 		String searchTerm = searchField.getText().trim();
 		String searchBy = comboBox.getSelectedItem().toString().toUpperCase();
 		if (searchTerm.length() == 0){

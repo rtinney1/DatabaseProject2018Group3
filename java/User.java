@@ -460,7 +460,7 @@ public class User
 				now = calendar.getTime();
 				currentTimestamp = new Timestamp(now.getTime());
 				
-				statement = connection.prepareStatement("INSERT INTO Rent_History VALUES(0,?,?,?,'0000-00-00 00:00:00')");
+				statement = connection.prepareStatement("INSERT INTO Rent_History VALUES(0,?,?,?,null)");
 				
 				statement.clearParameters();
 				statement.setInt(1, e.getEID());
