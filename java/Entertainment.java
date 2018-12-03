@@ -1073,9 +1073,9 @@ public class Entertainment
 				
 			
 			if (gamesOnly)
-				query = query + "AND E.platform <> 'DVD' AND E.platform <> 'Blu-Ray' ";
+				query = query + "AND (E.platform <> 'DVD' AND E.platform <> 'Blu-Ray') ";
 			else if (moviesOnly)
-				query = query + "AND E.platform = 'DVD' OR E.platform = 'Blu-Ray' ";
+				query = query + "AND (E.platform = 'DVD' OR E.platform = 'Blu-Ray') ";
 			
 			resultSet = statement.executeQuery(query);
 			
