@@ -807,13 +807,17 @@ public class Entertainment
 	 * An ArrayList of Award objects is passed and then
 	 * added to the database with the entertainment
 	 */
-	public void addAward(ArrayList<Award> awardWon)
+	public String addAward(ArrayList<Award> awardWon)
 	{
 		PreparedStatement statement;
+		Statement normStatement;
 		connection = connect.connect();
 		try
 		{
 			System.out.println("Inside addAward");
+			normStatement = connection.createStatement();
+			
+			normStatement.executeUpdate("DELETE FROM Won WHERE eid = " + eid);
 			statement = connection.prepareStatement("INSERT INTO Won VALUES (" + eid + ",?)");
 			
 			for(int i = 0; i < awardWon.size(); i++)
@@ -826,11 +830,13 @@ public class Entertainment
 			
 	        statement.close();
 			connect.disconnect(connection);
+			return "Successfully added awards.";
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 			connect.disconnect(connection);
+			return "Failed to add awards.";
 		}
 	}
 	
@@ -1036,7 +1042,7 @@ public class Entertainment
 				query = query + "FROM worked_in W "
 						+ "NATURAL JOIN Entertainment E "
 						+ "NATURAL JOIN Cast_Member C "
-						+ "WHERE C.name LIKE '" + searchTerm + "' ";
+						+ "WHERE C.name LIKE '%" + searchTerm + "%' ";
 			}
 			else if(searchBy.equals("DIRECTOR"))
 			{
@@ -1044,7 +1050,7 @@ public class Entertainment
 				query = query + "FROM worked_in W "
 						+ "NATURAL JOIN Entertainment E "
 						+ "NATURAL JOIN Cast_Member C "
-						+ "WHERE C.name LIKE '" + searchTerm + "' AND C.is_director = 1 ";
+						+ "WHERE C.name LIKE '%" + searchTerm + "%' AND C.is_director = 1 ";
 			}
 			else if (searchBy.equals("TITLE") || searchBy.equals("PLATFORM") || searchBy.equals("GENRE")){
 				
@@ -1054,18 +1060,22 @@ public class Entertainment
 							+ "FROM entertainment E natural join rent_history R "
 							+ "WHERE R.user_email = '" + userEmail + "') ";
 				else
-					query = query + "FROM Entertainment E WHERE " + searchBy.toLowerCase() + " LIKE '" + searchTerm + "' ";
+					query = query + "FROM Entertainment E WHERE " + searchBy.toLowerCase() + " LIKE '%" + searchTerm + "%' ";
 			}
 			
-			if (awardWinners)
+			if (awardWinners){
 				query = query + "AND E.eid IN ( "
-					+ "SELECT DISTINCT eid "
-					+ "FROM won) ";
+						+ "SELECT DISTINCT eid "
+						+ "FROM won) ";
+				
+				System.out.println("award winnersssss");
+			}
+				
 			
 			if (gamesOnly)
-				query = query + "AND E.platform <> 'DVD' AND E.platform <> 'BlueRay' ";
+				query = query + "AND E.platform <> 'DVD' AND E.platform <> 'Blu-Ray' ";
 			else if (moviesOnly)
-				query = query + "AND E.platform = 'DVD' OR E.platform = 'BlueRay' ";
+				query = query + "AND E.platform = 'DVD' OR E.platform = 'Blu-Ray' ";
 			
 			resultSet = statement.executeQuery(query);
 			

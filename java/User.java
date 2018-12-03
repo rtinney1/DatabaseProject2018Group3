@@ -619,7 +619,7 @@ public class User
 				aid = (int)resultSet.getObject(1);
 				
 				System.out.println("" + aid);
-				statement.executeUpdate("UPDATE Users SET aid = " + aid + "WHERE user_email = '" + email + "'");
+				statement.executeUpdate("UPDATE Users SET aid = " + aid + " WHERE user_email = '" + email + "'");
 				
 				this.street = street;
 				this.city = city;

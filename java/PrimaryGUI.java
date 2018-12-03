@@ -191,8 +191,8 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 		cBoxPanel.add(awardWinner);
 		cBoxPanel.add(newToMe);
 		
-		gameRad = new JRadioButton("Game");
-		movRad = new JRadioButton("movies");
+		gameRad = new JRadioButton("Games");
+		movRad = new JRadioButton("Movies");
 		bothRad = new JRadioButton("Both", true);
 		
 		radGroup.add(gameRad);
@@ -463,6 +463,17 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 						directorLabel.repaint();
 						directorLabel.revalidate();
 						
+						ArrayList<Award> awardList = entertainment.getAwardsWon();
+						String awardLabelText = "Award: ";
+						for (int i = 0; i < awardList.size()-1; i++) {
+							awardLabelText += awardList.get(i).getName() + ", ";
+						}
+						if (awardList.size() > 0)
+							awardLabelText += awardList.get(awardList.size()-1).getName();
+						awardsLabel.setText(awardLabelText);
+						awardsLabel.repaint();
+						awardsLabel.revalidate();
+						
 					} catch (GetEntertainmentException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -528,7 +539,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 	//-----------------------------------------------------------------------------
 	public void doRegister()
 	{
-		mainRegHub = new RegHub();
+		mainRegHub = new RegHub(false);
 		mainRegHub.addWindowListener(this);
 	}//end doRegister() method
 	

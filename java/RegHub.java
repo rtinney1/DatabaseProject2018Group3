@@ -14,6 +14,7 @@ public class RegHub extends JDialog implements WindowListener,
 	JPasswordField passField, passConfField;
 	JTextField nameField, emailField, addressField_1, addressField_2, cityField, zipField, phoneField;
 	JComboBox<String> planBox, stateBox;
+	JCheckBox adminCheckBox;
 	
 	GroupLayout layout;
 	
@@ -32,10 +33,13 @@ public class RegHub extends JDialog implements WindowListener,
 	String userPhone = null;
 	String userPass = null;
 	int userPlan;
+	boolean userIsAdmin = false;
+	
+	boolean isAdminAdding;
 	
 	ArrayList<String> stateList;
 	//====================RegHub() constructor===================================================
-	public RegHub()
+	public RegHub(boolean isAdminAdding)
 	{
 		Container pane = new Container();
 		String[] plans = {"-Please Selecta Plan-", "Tri-Star Plan (max 3 rentals at a time)", "Columbia Plan (max 5 rentals at a time)",
@@ -51,7 +55,7 @@ public class RegHub extends JDialog implements WindowListener,
 				 "SD", "TN", "TX", "UT", "VT",
 				 "VA", "WA", "WV", "WI", "WY"};
 		
-		
+		this.isAdminAdding = isAdminAdding;
 		nameLabel = new JLabel("Name: ");
 		emailLabel = new JLabel("User E-mail: ");
 		addressLabel_1 = new JLabel("User Mailing Address: ");
@@ -93,6 +97,10 @@ public class RegHub extends JDialog implements WindowListener,
 		stateBox.setSelectedItem(states[0]);
 		stateBox.setMaximumSize(new Dimension(150, 25));
 		
+		if (isAdminAdding){
+			adminCheckBox = new JCheckBox("Admin Account");
+		}
+		
 		layout = new GroupLayout(pane);
 		pane.setLayout(layout);
 		layout.setAutoCreateGaps(true);
@@ -122,7 +130,10 @@ public class RegHub extends JDialog implements WindowListener,
 		layout.setVerticalGroup(vertGroup);
 		
 		buttonPanel = new JPanel();
-		buttonPanel.add(Box.createRigidArea(new Dimension(285, 40)));
+		buttonPanel.add(Box.createRigidArea(new Dimension(200, 40)));
+		if (isAdminAdding){
+			buttonPanel.add(adminCheckBox);
+		}
 		
 		register = new JButton("Register");
 		register.setActionCommand("REGISTER");
@@ -285,6 +296,10 @@ public class RegHub extends JDialog implements WindowListener,
 				this.userPhone = phoneField.getText().trim();
 				this.userPlan = planBox.getSelectedIndex();
 				
+				if (isAdminAdding){
+					this.userIsAdmin = adminCheckBox.isSelected();
+				}
+				
 				dispose();
 			}	
 		}
@@ -425,6 +440,9 @@ public class RegHub extends JDialog implements WindowListener,
 		}
 		public int getUserPlan() {
 			return userPlan;
+		}
+		public boolean getAdminStatus() {
+			return userIsAdmin;
 		}
 		
 		public boolean verifyInfo(){
