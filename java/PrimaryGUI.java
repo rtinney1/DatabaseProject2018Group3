@@ -36,7 +36,8 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 	JTable tableViewer;
 	
 	JPanel memberFieldPanel, memberPanel, memberDataPanel, movieDataPanel, memberTopPanel, searchPanel, radButtonPanel, cBoxPanel;
-	JButton search, clear, rentButton, sequalButton, userHistoryButton, adminGetLast24Button, adminGetTop10Button, removeButton, updateButton, logoutButton;
+	JButton search, clear, rentButton, sequalButton, userHistoryButton, 
+	adminGetLast24Button, adminGetTop10Button, removeButton, updateButton, logoutButton, infoButton;
 	JLabel searchLabel;
 	JTextField searchField;
 	
@@ -119,6 +120,11 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 		clear = new JButton("Clear");
 		clear.setActionCommand("CLEAR");
 		clear.addActionListener(this);
+		
+		infoButton = new JButton("Info");
+		infoButton.setActionCommand("INFO");
+		infoButton.addActionListener(this);
+		infoButton.setEnabled(false);
 		
 		rentButton = new JButton("Rent");
 		rentButton.setActionCommand("RENT");
@@ -247,6 +253,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 		 	{
 		 		adminMenu.setVisible(true);
 		 		rentButton.setVisible(false);
+		 		infoButton.setVisible(false);
 		 		updateButton.setVisible(true);
 		 		removeButton.setVisible(true);
 		 	}
@@ -255,6 +262,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 		 	{
 		 		adminMenu.setVisible(false);
 		 		rentButton.setVisible(true);
+		 		infoButton.setVisible(true);
 		 		updateButton.setVisible(false);
 		 		removeButton.setVisible(false);
 		 	}
@@ -317,6 +325,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 			rentButton.setEnabled(false);
 			removeButton.setEnabled(false);
 			updateButton.setEnabled(false);
+			infoButton.setEnabled(false);
 			String eid = dataTable.getValueAt(dataTable.getSelectedRow(), 0).toString();
 			System.out.println("Find sequals with this EID: " + eid);
 			
@@ -433,6 +442,10 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 		else if (e.getActionCommand().equals("EUSER")){
 			UserManagementDialog userManagementDialog = new UserManagementDialog();
 		}
+		
+		else if (e.getActionCommand().equals("INFO")){
+			InfoDialog infoDialog = new InfoDialog(this, (int)dataTable.getValueAt(dataTable.getSelectedRow(), 0));
+		}
 	}//end actionPerformed() method
 	
 	@Override
@@ -448,7 +461,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 						if (sequalTitle != null)
 							sequalLabel.setText("Sequal: " + entertainment.getSequal().getTitle());
 						else
-							sequalLabel.setText("Sequal: NONE");
+							sequalLabel.setText("Sequal: ");
 						sequalLabel.repaint();
 						sequalLabel.revalidate();
 						
@@ -490,7 +503,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 	                rentButton.setEnabled(true);
 	                removeButton.setEnabled(true);
 	                updateButton.setEnabled(true);
-	                
+	                infoButton.setEnabled(true);
 	                
 	            }
 	        }
@@ -519,6 +532,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 			srButtonPanel.add(Box.createRigidArea(new Dimension(140,0)));
 			srButtonPanel.add(rentButton);
 			srButtonPanel.add(sequalButton);
+			srButtonPanel.add(infoButton);
 			srButtonPanel.add(Box.createRigidArea(new Dimension(150,0)));
 			cp.add(srButtonPanel, BorderLayout.SOUTH);
 		}
@@ -529,6 +543,8 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 			adminSouthPanel.add(Box.createRigidArea(new Dimension(160,0)));
 			adminSouthPanel.add(rentButton);
 			rentButton.setVisible(false);
+			adminSouthPanel.add(infoButton);
+			infoButton.setVisible(false);
 			adminSouthPanel.add(sequalButton);
 			adminSouthPanel.add(updateButton);
 			adminSouthPanel.add(removeButton);
