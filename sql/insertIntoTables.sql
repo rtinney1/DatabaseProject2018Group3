@@ -31,6 +31,7 @@ INSERT INTO Entertainment VALUES(0, 'Fake Movie 5', 'November 9 1995', 'Horror',
 INSERT INTO Entertainment VALUES(0, 'Fake Game 1', 'May 5 2005', 'Shooter', 3, '0', 0, 'PS4', '2.2');
 INSERT INTO Entertainment VALUES(0, 'Fake Game 2', 'May 5 2006', 'Shooter', 3, '0', 0, 'PS4', '2.3');
 INSERT INTO Entertainment VALUES(0, 'Fake Game 3', 'May 5 2007', 'Shooter', 3, '0', 0, 'PS4', '2.4');
+INSERT INTO Entertainment VALUES(0, 'The Time Before Land 3', 'June 4 2080', 'Cartoon', 1, '0', 0, 'DVD', '1');
 
 INSERT INTO Worked_In VALUES(1, 1);
 INSERT INTO Worked_In VALUES(2, 1);

@@ -7,7 +7,6 @@
  * 		on returning the information as it appears in the database
  */
 
-package application;
 
 import java.sql.Timestamp;
 import java.util.regex.Pattern;
@@ -22,7 +21,10 @@ public class RentHistory
 	Timestamp dateReturned;
 	User user;
 	String name;
-	String address;
+	String street;
+	String city;
+	String state;
+	int zip;
 	
 	/*Constructor with all of the information except for dateReturned passed
 	 * 
@@ -36,14 +38,10 @@ public class RentHistory
 		this.title = title;
 		this.user = new User(email);
 		name = this.user.getName();
-		
-		a = this.user.getAddress().split(Pattern.quote("$"));
-		
-		address = "";
-		for(int i = 0; i < a.length; i++)
-			address = address + a[i] + " ";
-		
-		System.out.println(name + " " + address);
+		this.street = this.user.getStreet();
+		this.city = this.user.getCity();
+		this.state = this.user.getState();
+		this.zip = this.user.getZip();
 		this.dateRented = dateRented;
 	}
 	
@@ -81,12 +79,20 @@ public class RentHistory
 		this.dateReturned = dateReturned;
 	}
 	
-	/*String getAddress()
-	 * returns the address of the user who rented the object
-	 */
-	public String getAddress()
-	{
-		return address;
+	public String getStreet(){
+		return street;
+	}
+	
+	public String getCity(){
+		return city;
+	}
+	
+	public String getState(){
+		return state;
+	}
+	
+	public int getZip(){
+		return zip;
 	}
 	
 	/*String getName()

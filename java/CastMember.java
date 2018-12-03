@@ -9,12 +9,13 @@
  * 		the CastMember object into the database
  */
 
-package application;
 
+import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 public class CastMember
@@ -39,9 +40,9 @@ public class CastMember
 		
 		try
 		{
-			statement = connection.prepareStatement("SELECT * FROM Cast_Members "
+			statement = connection.prepareStatement("SELECT * FROM Cast_Member C "
 					+ "INNER JOIN Address A ON C.aid = A.aid "
-					+ "INNER JOIN Worked_In W ON C.cid = W.cid WHERE cid = ?");
+					+ "WHERE C.cid = ?");
 			statement.clearParameters();
 			statement.setInt(1, cid);
 			
@@ -57,8 +58,6 @@ public class CastMember
 
 				this.addressToAddToDB = resultSet.getString("street") + "$" + resultSet.getString("city") + "$"
 						+ resultSet.getString("state") + "$" + resultSet.getInt("zip");
-				
-				this.eid = resultSet.getInt("eid");
 			}
 		}
 		catch(Exception e)
@@ -93,6 +92,10 @@ public class CastMember
 		this.director = director;
 	}
 	
+	public CastMember() {
+		// TODO Auto-generated constructor stub
+	}
+
 	/*String getName()
 	 * Returns the name of the CastMember
 	 */
@@ -153,7 +156,7 @@ public class CastMember
 		
 		try
 		{
-			statement = connection.prepareStatement("UPDATE Cast_Members SET director = ? WHERE cid = ?");
+			statement = connection.prepareStatement("UPDATE Cast_Member SET director = ? WHERE cid = ?");
 			
 			statement.clearParameters();
 			statement.setBoolean(1, d);
@@ -208,7 +211,7 @@ public class CastMember
 			{
 				aid = resultSet.getInt("aid");
 				
-				statement.executeUpdate("UPDATE Cast_Members SET aid = " + aid + " WHERE cid =" + cid);
+				statement.executeUpdate("UPDATE Cast_Member SET aid = " + aid + " WHERE cid =" + cid);
 				
 				resultSet.close();
 				statement.close();
@@ -231,7 +234,7 @@ public class CastMember
 				
 				aid = resultSet.getInt("aid");
 				
-				statement.executeUpdate("UPDATE Cast_Members SET aid = " + aid + " WHERE cid =" + cid);
+				statement.executeUpdate("UPDATE Cast_Member SET aid = " + aid + " WHERE cid =" + cid);
 				
 				resultSet.close();
 				statement.close();
@@ -266,7 +269,7 @@ public class CastMember
 		
 		try
 		{
-			statement = connection.prepareStatement("UPDATE Cast_Members SET name = ? WHERE cid = ?");
+			statement = connection.prepareStatement("UPDATE Cast_Member SET name = ? WHERE cid = ?");
 			
 			statement.clearParameters();
 			statement.setString(1, nn);
@@ -402,6 +405,38 @@ public class CastMember
 		{
 			e.printStackTrace();
 			connect.disconnect(connection);
+		}
+	}
+	
+	public static ArrayList<CastMember> getAllCastMembers(){
+		ArrayList<CastMember> castArray = new ArrayList<>();
+		Connect connect = new Connect();
+		Connection connection = connect.connect();
+		PreparedStatement statement;
+		
+		try
+		{
+			statement = connection.prepareStatement("SELECT * FROM Cast_Member");
+			
+			ResultSet resultSet = statement.executeQuery();
+			
+			while (resultSet.next())
+			{
+				int cid = resultSet.getInt("cid");
+				String name = resultSet.getString("name");
+				CastMember tempCast = new CastMember();
+				tempCast.cid = cid;
+				tempCast.name = name;
+				castArray.add(tempCast);
+			}
+			
+			return castArray;
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			connect.disconnect(connection);
+			return null;
 		}
 	}
 }

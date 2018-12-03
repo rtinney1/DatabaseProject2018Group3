@@ -1,12 +1,20 @@
+/*Entertainment.java
+ * Created by: Randi Tinney
+ * Created On: Oct 24 2018
+ * Updated On: Nov 7 2018
+ * Description: Entertainment.java is the main class for all types of entertainment within the Movies-R-Us database.
+ * 		It provides methods for getting entertainment, lcreating entertainment, getting the entertainment's data,
+ * 		changing the entertainment's data, getting the entertainment's awards won, 
+ * 		getting a list of all sequels for the entertainment, getting the CastMembers of the Entertainment, deleting
+ * 		an award, deleting a castmember, searching through the entertainment with predefined specifications, and getting
+ * 		a list of all entertainment within the databse
+ */
+
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Vector;
-import java.util.regex.Pattern;
-
 import javax.swing.table.DefaultTableModel;
 
 public class Entertainment 
@@ -22,19 +30,31 @@ public class Entertainment
 	String genre;
 	int numInStock;
 	
-	String awardsWon;
 	int sequalID;
 	
 	String platform;
 	String versionNum;
 	
+	//Default constructor that sets all values to empty and 0
 	public Entertainment()
 	{
 		connect = new Connect();
+		eid=0;
+		title = "";
+		type = "";
+		releaseDate = "";
+		genre = "";
+		numInStock = 0;
+		sequalID = 0;
+		platform = "";
+		versionNum = "";
 	}
 	
+	/*Constructor with all information known and we just need to store the
+	 * data
+	 */
 	public Entertainment(int eid, String title, String releaseDate, String genre, 
-					int numInStock, String awardsWon, int sequalID, String platform, String versionNum)
+					int numInStock,int sequalID, String platform, String versionNum)
 	{
 		connect = new Connect();
 		this.eid = eid;
@@ -42,7 +62,6 @@ public class Entertainment
 		this.releaseDate = releaseDate;
 		this.genre = genre;
 		this.numInStock = numInStock;
-		this.awardsWon = awardsWon;
 		this.sequalID = sequalID;
 		this.platform = platform;
 		this.versionNum = versionNum;
@@ -53,6 +72,10 @@ public class Entertainment
 			type = "Game";
 	}
 	
+	/*Constructor that accesses the database to get the information of
+	 * an entertainment with the passed eid. Throws GetEntertainmentException
+	 * if the entertainment does not exist
+	 */
 	public Entertainment(int eid) throws GetEntertainmentException
 	{
 		Statement statement;
@@ -66,7 +89,7 @@ public class Entertainment
 		{
 			statement = connection.createStatement();
 			
-			resultSet = statement.executeQuery("SELECT * FROM Entertainment WHERE eid = " + eid);
+			resultSet = statement.executeQuery("SELECT * FROM Entertainment E WHERE E.eid = " + eid);
 				
 			if(resultSet.next())
 			{
@@ -75,10 +98,9 @@ public class Entertainment
 				releaseDate = (String)resultSet.getObject(3);
 				genre = (String)resultSet.getObject(4);
 				numInStock = (int)resultSet.getObject(5);
-				awardsWon = (String)resultSet.getObject(6);
-				sequalID = (int)resultSet.getObject(7);
-				platform = (String)resultSet.getObject(8);
-				versionNum = (String)resultSet.getObject(9);
+				sequalID = (int)resultSet.getObject(6);
+				platform = (String)resultSet.getObject(7);
+				versionNum = (String)resultSet.getObject(8);
 				
 				if(platform.equals("DVD") || platform.equals("BlueRay"))
 					type = "Movie";
@@ -98,40 +120,55 @@ public class Entertainment
 		}
 	}
 	
-	public Entertainment
-			(boolean add, String title, String releaseDate, String genre, 
-					int numInStock, String awardsWon, int sequalID, String platform, String versionNum)
-						throws AddEntertainmentException, GetEntertainmentException
-	{
-		connect = new Connect();
-		
-		if(add)
-		{
-			if(!add(title, releaseDate, genre, numInStock, awardsWon, sequalID, platform, versionNum))
-				throw new AddEntertainmentException("Entertainment couldn't be added");
-		}
-		else
-		{
-			if(!get(title, releaseDate, genre, numInStock, awardsWon, sequalID, platform, versionNum))
-				throw new GetEntertainmentException("Entertainment does not exist");
-		}
-	}
+	/*Constructor that either adds or gets entertainment based on all of its information
+	 * Will throw either AddEntertainmentException or GetEntertainmentException depending on
+	 * if you are adding or getting
+	 */
+//	public Entertainment
+//			(boolean add, String title, String releaseDate, String genre, 
+//					int numInStock, Entertainment sequal, String platform, String versionNum)
+//						throws AddEntertainmentException, GetEntertainmentException
+//	{
+//		connect = new Connect();
+//		
+//		if(add)
+//		{
+//			if(!add(title, releaseDate, genre, numInStock, sequal, platform, versionNum))
+//				throw new AddEntertainmentException("Entertainment couldn't be added");
+//		}
+//		else
+//		{
+//			if(!get(title, releaseDate, genre, numInStock, sequal, platform, versionNum))
+//				throw new GetEntertainmentException("Entertainment does not exist");
+//		}
+//	}
 	
-	public boolean add(String title, String releaseDate, String genre, 
-			int numInStock, String awardsWon, int sequalID, String platform, String versionNum)
+	/*boolean add(String title, String releaseDate, String genre, 
+	 *		int numInStock, Entertainment sequal, String platform, String versionNum)
+	 *Adds the entertainment to the database based on all of its information 
+	 */
+	public String add(String title, String releaseDate, String genre, 
+			int numInStock, int sequalId, String platform, String versionNum)
 	{
-		Statement statement;
-
+		PreparedStatement statement;
 		connection = connect.connect();
 		try
-		{
-			statement = connection.createStatement();
-			
-			ResultSet resultSet = statement.executeQuery("SELECT * "
+		{	
+			statement = connection.prepareStatement("SELECT * "
 					+ "FROM Entertainment E "
-					+ "WHERE E.title = '" + title + "' AND E.releaseDate = '" + releaseDate 
-					+ "' AND E.genre = '" + genre + "'," + numInStock + "," + awardsWon + "," + sequalID
-					+ ",'" + platform + "','" + versionNum + "'");
+					+ "WHERE E.title = ? AND E.release_date = ? AND E.genre = ? AND num_in_stock = ? AND "
+					+ "sequal_id = ? AND platform = ? AND version = ?");
+			
+			statement.clearParameters();
+			statement.setString(1, title);
+			statement.setString(2, releaseDate);
+			statement.setString(3, genre);
+			statement.setInt(4, numInStock);
+			statement.setInt(5, sequalId);
+			statement.setString(6, platform);
+			statement.setString(7, versionNum);
+			
+			ResultSet resultSet = statement.executeQuery();
 	         // process query results
 	         
 	         if(resultSet.next())//movie already exists in list
@@ -139,22 +176,29 @@ public class Entertainment
 				resultSet.close();
 			    statement.close();
 				connect.disconnect(connection);
-	        	return false;
+	        	return "[Error]: Could not add '" + title + "', as it already exists.";
 	         }
 	         else
 	         {
-				statement.executeUpdate("INSERT INTO Entertainment VALUES"
-						+ "(" + 0 + ",'" + title + "' AND E.releaseDate = '" + releaseDate 
-						+ "' AND E.genre = '" + genre + "'," + numInStock + "," + awardsWon + "," + sequalID
-						+ ",'" + platform + "','" + versionNum + "')");
+	        	 statement = connection.prepareStatement("INSERT INTO Entertainment VALUES (0,?,?,?,?,?,?,?)");
+	        	 
+	        	 statement.clearParameters();
+	 			statement.setString(1, title);
+	 			statement.setString(2, releaseDate);
+	 			statement.setString(3, genre);
+	 			statement.setInt(4, numInStock);
+	 			statement.setInt(5, sequalId);
+	 			statement.setString(6, platform);
+	 			statement.setString(7, versionNum);
+	 			
+				statement.executeUpdate();
 					
 					
 				this.title = title;
 				this.releaseDate = releaseDate;
 				this.genre = genre;
 				this.numInStock = numInStock;
-				this.awardsWon = awardsWon;
-				this.sequalID = sequalID;
+				this.sequalID = sequalId;
 				this.platform = platform;
 				this.versionNum = versionNum;
 				
@@ -163,26 +207,27 @@ public class Entertainment
 				else
 					type = "Game";
 				
-				resultSet = statement.executeQuery("SELECT eid FROM Entertanment");
-				
+				resultSet = statement.executeQuery("SELECT eid FROM Entertainment");
 				if(resultSet.last())
 					eid = (int)resultSet.getObject(1);
 				
-					
 				resultSet.close();
 			    statement.close();
 				connect.disconnect(connection);
-		        return true;
+		        return "Succesfully added '" + title + "'.";
 	        }//end of else
 		}//end try
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
 			e.printStackTrace();
-			return false;
+			return "[Error] Failed to add '" + title + "'.";
 		}
 	}
 	
+	/*boolean get(int eid)
+	 * Gets the entertainment from the database based on its eid
+	 */
 	public boolean get(int eid)
 	{
 		Statement statement;
@@ -203,10 +248,9 @@ public class Entertainment
 				releaseDate = (String)resultSet.getObject(3);
 				genre = (String)resultSet.getObject(4);
 				numInStock = (int)resultSet.getObject(5);
-				awardsWon = (String)resultSet.getObject(6);
-				sequalID = (int)resultSet.getObject(7);
-				platform = (String)resultSet.getObject(8);
-				versionNum = (String)resultSet.getObject(9);
+				sequalID = (int)resultSet.getObject(6);
+				platform = (String)resultSet.getObject(7);
+				versionNum = (String)resultSet.getObject(8);
 				
 				if(platform.equals("DVD") || platform.equals("BlueRay"))
 					type = "Movie";
@@ -234,32 +278,49 @@ public class Entertainment
 		}
 	}
 	
+	/*boolean get(String title, String releaseDate, String genre, 
+	 *		int numInStock, Entertainment sequal, String platform, String versionNum)
+	 * Gets the entertainment from the database based on all of its information
+	 */
 	public boolean get(String title, String releaseDate, String genre, 
-			int numInStock, String awardsWon, int sequalID, String platform, String versionNum)
+			int numInStock, Entertainment sequal, String platform, String versionNum)
 	{
-		Statement statement;
-
+		PreparedStatement statement;
+		int sid;
 		connection = connect.connect();
 		try
 		{
-			statement = connection.createStatement();
 			
-			ResultSet resultSet = statement.executeQuery("SELECT * "
+			if(sequal.getEID() == 0)
+				sid = 0;
+			else
+				sid = sequal.getEID();
+			
+			statement = connection.prepareStatement("SELECT * "
 					+ "FROM Entertainment E "
-					+ "WHERE E.title = '" + title + "' AND E.releaseDate = '" + releaseDate 
-					+ "' AND E.genre = '" + genre + "'," + numInStock + "," + awardsWon + "," + sequalID
-					+ ",'" + platform + "','" + versionNum + "'");
+					+ "WHERE E.title = ? AND E.releaseDate = ? AND E.genre =? AND num_in_stock = ? AND "
+					+ "sequal_id = ? AND platform =? AND version = ?");
+			
+			statement.clearParameters();
+			statement.setString(1, title);
+			statement.setString(2, releaseDate);
+			statement.setString(3, genre);
+			statement.setInt(4, numInStock);
+			statement.setInt(5, sid);
+			statement.setString(6, platform);
+			statement.setString(7, versionNum);
+			
+			ResultSet resultSet = statement.executeQuery();
 			
 			if(resultSet.next())
 			{
-				eid = (int)resultSet.getObject(1);
+				eid = resultSet.getInt("eid");
 				
 				this.title = title;
 				this.releaseDate = releaseDate;
 				this.genre = genre;
 				this.numInStock = numInStock;
-				this.awardsWon = awardsWon;
-				this.sequalID = sequalID;
+				this.sequalID = sequal.getEID();
 				
 				this.platform = platform;
 				this.versionNum = versionNum;
@@ -290,35 +351,53 @@ public class Entertainment
 		}
 	}
 	
+	/*int getEID()
+	 * returns the eid of the Entertainment
+	 */
 	public int getEID()
 	{
 		return eid;
 	}
 	
+	/*String getTitle()
+	 * returns the title of the Entertainment
+	 */
 	public String getTitle()
 	{
 		return title;
 	}
 	
+	/*String getReleaseDate()
+	 * returns the release date of the Entertainment
+	 */
 	public String getReleaseDate()
 	{
 		return releaseDate;
 	}
 	
+	/*String getGenre()
+	 * returns the genre of the Entertainment
+	 */
 	public String getGenre()
 	{
 		return genre;
 	}
 	
+	/*int getNumInStock()
+	 * returns the number of the Entertainment in stock
+	 */
 	public int getNumInStock()
 	{
 		return numInStock;
 	}
 	
-	public ArrayList<String> getAwardsWon()
+	/*ArrayList<Award> getAwardsWon
+	 * Accesses the database to return an ArrayList of
+	 * the awards the entertainment has won
+	 */
+	public ArrayList<Award> getAwardsWon()
 	{
-		String[] awards = awardsWon.split(Pattern.quote("$"));
-		ArrayList<String> retString = new ArrayList<String>();
+		ArrayList<Award> list = new ArrayList<Award>();
 		Statement statement;
 		ResultSet resultSet = null;
 		connection = connect.connect();
@@ -327,34 +406,37 @@ public class Entertainment
 		{
 			statement = connection.createStatement();
 			
-			for(int i = 0; i < awards.length; i++)
-			{
-				resultSet = statement.executeQuery("SELECT title FROM Awards WHERE awID =" + Integer.parseInt(awards[i]));
-				
-				while(resultSet.next())
-				{
-					retString.add((String)resultSet.getObject(1));
-				}
-			}
+			resultSet = statement.executeQuery("SELECT * FROM Awards A "
+					+ "INNER JOIN Won W ON A.awardID = W.awardID "
+					+ "WHERE W.eid = " + eid);
+			
+			while(resultSet.next())
+				list.add(new Award(resultSet.getInt("awardID"), resultSet.getString("title")));
 			
 			resultSet.close();
 			statement.close();
 			connect.disconnect(connection);
-			return retString;
+			return list;
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 			connect.disconnect(connection);
-			return retString;
+			return list;
 		}
 	}
 	
+	/*int getSequalID()
+	 * returns the sequel id of the entertainment
+	 */
 	public int getSequalID()
 	{
 		return sequalID;
 	}
 	
+	/*String getType()
+	 * returns the type of the entertainment
+	 */
 	public String getType()
 	{
 		return type;
@@ -399,7 +481,7 @@ public class Entertainment
 					// Building the select query to include all sequel id checks
 					String query = "SELECT eid AS 'ID', title AS 'Title', "
 					+ "release_date AS 'Release Date', genre AS 'Genre', "
-					+ "num_in_stock AS 'Stock', awards_won AS 'Awards Won', "
+					+ "num_in_stock AS 'Stock', "
 					+ "sequal_id AS 'Sequel ID', platform AS 'Platform', version AS 'Version' "
 					+ "FROM Entertainment E WHERE ";
 					int count = 0;
@@ -434,17 +516,39 @@ public class Entertainment
 		return null;
 	}
 	
-	public ArrayList<Entertainment> getSequal()
+	/*Entertainment getSequal()
+	 * returns the sequal of the entertainment
+	 */
+	public Entertainment getSequal()
+	{
+		Entertainment e = null;
+		
+		try
+		{
+			e = new Entertainment(sequalID);
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		
+		return e;
+	}
+	
+	/*ArrayList<Entertainment> getSequalList()
+	 * Returns an ArrayList of Entertainment objects of
+	 * all sequals of the entertainment
+	 */
+	public ArrayList<Entertainment> getSequalList()
 	{
 		ArrayList<Entertainment> list = new ArrayList<Entertainment>();
 		Entertainment sequal;
 		boolean sequalExists = true;
 		int id = getSequalID();
+		//int id = this.eid;
 		
 		Statement statement;
 		connection = connect.connect();
-		
-		System.out.println("SequalID: " + id);
 		
 		if(id == 0)
 		{
@@ -459,20 +563,15 @@ public class Entertainment
 				while(sequalExists)
 				{
 					sequal = new Entertainment(id);
-					System.out.println("Get title in getSequal()");
-					System.out.println(sequal.getTitle());
 					list.add(sequal);
 					
-					
-					ResultSet resultSet = statement.executeQuery("SELECT sequal_id FROM Entertainment E "
+					ResultSet resultSet = statement.executeQuery("SELECT eid FROM Entertainment E "
 							+ "WHERE E.eid = " + sequal.getSequalID());
 					
 					if(resultSet.next())
 						id = (int)resultSet.getObject(1);
 					else
 						sequalExists = false;
-					
-					System.out.println(id);
 				}
 				
 				return list;
@@ -486,85 +585,117 @@ public class Entertainment
 		}
 	}
 	
+	/*String getPlatform()
+	 * returns the platform of the entertainment
+	 */
 	public String getPlatform()
 	{
 		return platform;
 	}
 	
+	/*String getVersion()
+	 * returns the version number of the entertainment
+	 */
 	public String getVersion()
 	{
 		return versionNum;
 	}
 	
-	public void changeTitle(String title)
+	/*void changeTitle(String title)
+	 * Accesses the database to change the title of the
+	 * entertainment
+	 */
+	public String changeTitle(String title)
 	{
-		Statement statement;
+		PreparedStatement statement;
 		
 		connection = connect.connect();
 		try
 		{
-			statement = connection.createStatement();
+			statement = connection.prepareStatement("UPDATE Entertainment SET title = ? WHERE eid = " + eid);
+			statement.clearParameters();
+			statement.setString(1, title);
 			
-			statement.executeUpdate("UPDATE Entertainment SET title = '" + title + "' WHERE eid = " + eid);
+			statement.executeUpdate();
 			
 			this.title = title;
 			
 	        statement.close();
 			connect.disconnect(connection);
+			return "Successfully updated title.";
 		}
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
+			return "Failed to updated title.";
 			
 		}
 	}
 	
-	public void changeReleaseDate(String releaseDate)
+	/*void changeReleaseDate(String releaseDate)
+	 * Accesses the database to change the release date of
+	 * the entertainment
+	 */
+	public String changeReleaseDate(String releaseDate)
 	{
-		Statement statement;
+		PreparedStatement statement;
 		
 		connection = connect.connect();
 		try
 		{
-			statement = connection.createStatement();
+			statement = connection.prepareStatement("UPDATE Entertainment SET release_date = ? WHERE eid = " + eid);
+			statement.clearParameters();
+			statement.setString(1, releaseDate);
 			
-			statement.executeUpdate("UPDATE Entertainment SET release_date = '" + releaseDate + "' WHERE eid = " + eid);
+			statement.executeUpdate();
 			
 			this.releaseDate = releaseDate;
 			
 	        statement.close();
 			connect.disconnect(connection);
+			return "Successfully updated release date.";
 		}
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
-			
+			return "Failed to updated release date.";
 		}
 	}
 	
-	public void changeGenre(String genre)
+	/*void changeGenre(String genre)
+	 * Accesses the database to change the genre of the
+	 * entertainment
+	 */
+	public String changeGenre(String genre)
 	{
-		Statement statement;
+		PreparedStatement statement;
 		
 		connection = connect.connect();
 		try
 		{
-			statement = connection.createStatement();
+			statement = connection.prepareStatement("UPDATE Entertainment SET genre = ? WHERE eid = " + eid);
+			statement.clearParameters();
+			statement.setString(1, genre);
 			
-			statement.executeUpdate("UPDATE Entertainment SET genre = '" + genre + "' WHERE eid = " + eid);
+			statement.executeUpdate();
 			
 			this.genre = genre;
 			
 	        statement.close();
 			connect.disconnect(connection);
+			return "Successfully updated genre.";
 		}
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
-			
+			return "Failed to updated genre.";
 		}
 	}
 	
+	/*void addOneToStock()
+	 * Accesses the database to add one to the total number
+	 * of entertainment in stock
+	 */
 	public void addOneToStock()
 	{
 		Statement statement;
@@ -579,7 +710,7 @@ public class Entertainment
 			
 			if(resultSet.next())
 			{
-				newNumberInStock = (int)resultSet.getObject(1);
+				newNumberInStock = resultSet.getInt("num_in_stock");
 				
 				newNumberInStock++;
 				
@@ -598,6 +729,10 @@ public class Entertainment
 		}
 	}
 	
+	/*boolean removeOneFromStock()
+	 * Accesses the database to remove one from the total
+	 * number of entertainment in stock
+	 */
 	public boolean removeOneFromStock()
 	{
 		Statement statement;
@@ -612,7 +747,7 @@ public class Entertainment
 			
 			if(resultSet.next())
 			{
-				newNumberInStock = (int)resultSet.getObject(1);
+				newNumberInStock = resultSet.getInt("num_in_stock");
 				
 				newNumberInStock--;
 				
@@ -638,58 +773,91 @@ public class Entertainment
 		}
 	}
 	
-	public void changeNumOfStock(int newStockNum)
+	/*void changeNumOfStock(int newStockNum)
+	 * Accesses the database to change the total number
+	 * of entertainment in stock
+	 */
+	public String changeNumOfStock(int newStockNum)
 	{
-		Statement statement;
+		PreparedStatement statement;
 		
 		connection = connect.connect();
 		try
 		{
-			statement = connection.createStatement();
+			statement = connection.prepareStatement("UPDATE Entertainment SET num_in_stock = ? WHERE eid = " + this.eid);
+			statement.clearParameters();
+			statement.setInt(1, newStockNum);
 			
-			statement.executeUpdate("UPDATE Entertainment SET num_in_stock = " + newStockNum + " WHERE eid = " + eid);
+			statement.executeUpdate();
 			
 			this.numInStock = newStockNum;
 			
 	        statement.close();
 			connect.disconnect(connection);
+			return "Successfully updated stock.";
 		}
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
-			
+			return "Failed to update the stock.";
 		}
 	}
 	
-	public void changeAwardsWon(String awardWon)
+	/*void addAward(ArrayList<Award> awardWon)
+	 * An ArrayList of Award objects is passed and then
+	 * added to the database with the entertainment
+	 */
+	public String addAward(ArrayList<Award> awardWon)
+	{
+		PreparedStatement statement;
+		Statement normStatement;
+		connection = connect.connect();
+		try
+		{
+			System.out.println("Inside addAward");
+			normStatement = connection.createStatement();
+			
+			normStatement.executeUpdate("DELETE FROM Won WHERE eid = " + eid);
+			statement = connection.prepareStatement("INSERT INTO Won VALUES (" + eid + ",?)");
+			
+			for(int i = 0; i < awardWon.size(); i++)
+			{
+				System.out.println("Adding " + awardWon.get(i).getName());
+				statement.clearParameters();
+				statement.setInt(1, awardWon.get(i).getAwardID());
+				statement.executeUpdate();
+			}
+			
+	        statement.close();
+			connect.disconnect(connection);
+			return "Successfully added awards.";
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			connect.disconnect(connection);
+			return "Failed to add awards.";
+		}
+	}
+	
+	/*void addSequal(Entertainment sequal)
+	 * Accesses the database to add a sequal to the entertainment
+	 */
+	public void addSequal(Entertainment sequal)
 	{
 		Statement statement;
+		
 		connection = connect.connect();
+		
 		try
 		{
 			statement = connection.createStatement();
 			
-			ResultSet resultSet = statement.executeQuery("SELECT * FROM Awards WHERE title ='" + awardWon + "'");
+			statement.executeUpdate("UPDATE Entertainment SET sequal_id = " + sequal.getEID() + " WHERE eid = " + eid);
 			
-			if(resultSet.next())
-			{
-				awardsWon = awardsWon + "$" + (int)resultSet.getObject(1);
-				
-				statement.executeUpdate("UPDATE Entertainment SET awards_won = " + awardsWon + " WHERE eid = " + eid);
-			}
-			else
-			{
-				statement.executeUpdate("INSERT INTO Awards VALUES (" + 0 + "'" + awardWon + "'");
-
-				resultSet = statement.executeQuery("SELECT * FROM Awards");
-				
-				resultSet.last();
-				
-				awardsWon = awardsWon + "$" + (int)resultSet.getObject(1);
-			}
+			this.sequalID = sequal.getEID();
 			
-			resultSet.close();
-	        statement.close();
+			statement.close();
 			connect.disconnect(connection);
 		}
 		catch(Exception e)
@@ -699,11 +867,14 @@ public class Entertainment
 		}
 	}
 	
-	public boolean addSequal(int sequalID)
+	/*boolean addSequal(intt sequalID)
+	 * Accesses the database to add a sequal to the entertainment
+	 */
+	public String addSequal(int sequalID)
 	{
 		try
 		{
-			Entertainment sequal = new Entertainment(sequalID);//just to see if the sequal exists
+			//Entertainment sequal = new Entertainment(sequalID);//just to see if the sequal exists
 			Statement statement;
 			
 			connection = connect.connect();
@@ -715,51 +886,54 @@ public class Entertainment
 			
 			statement.close();
 			connect.disconnect(connection);
-			return true;
-		}
-		catch(GetEntertainmentException e)
-		{
-			return false;
+			return "Successfully added sequel.";
 		}
 		catch(Exception e)
 		{
-			return false;
+			return "Failed to add sequel.";
 		}
 		
 	}
 	
-	public boolean addSequal(String title, String releaseDate, String genre, 
-					int numInStock, String awardsWon, int sequalID, String platform, String versionNum)
-	{
-		try
-		{
-			Entertainment sequal = new Entertainment(false, title, releaseDate, genre, numInStock,
-					awardsWon, sequalID, platform, versionNum);//just to see if the sequal exists
-			Statement statement;
-			
-			connection = connect.connect();
-			statement = connection.createStatement();
-			
-			int id = sequal.getSequalID();
-			
-			statement.executeUpdate("UPDATE Entertainment SET sequal_id = " + id + " WHERE eid = " + eid);
-			
-			this.sequalID = sequalID;
-			
-			statement.close();
-			connect.disconnect(connection);
-			return true;
-		}
-		catch(GetEntertainmentException e)
-		{
-			return false;
-		}
-		catch(Exception e)
-		{
-			return false;
-		}
-	}
+	/*boolean addSequal(String title, String releaseDate, String genre, 
+					int numInStock, Entertainment sequalID, String platform, String versionNum)
+	 * Accesses the database to add a sequal to the entertainment
+	 */
+//	public boolean addSequal(String title, String releaseDate, String genre, 
+//					int numInStock, Entertainment sequalID, String platform, String versionNum)
+//	{
+//		try
+//		{
+//			Entertainment sequal = new Entertainment(false, title, releaseDate, genre, numInStock,
+//					sequalID, platform, versionNum);//just to see if the sequal exists
+//			Statement statement;
+//			
+//			connection = connect.connect();
+//			statement = connection.createStatement();
+//			
+//			int id = sequal.getSequalID();
+//			
+//			statement.executeUpdate("UPDATE Entertainment SET sequal_id = " + id + " WHERE eid = " + eid);
+//			
+//			this.sequalID = id;
+//			
+//			statement.close();
+//			connect.disconnect(connection);
+//			return true;
+//		}
+//		catch(GetEntertainmentException e)
+//		{
+//			return false;
+//		}
+//		catch(Exception e)
+//		{
+//			return false;
+//		}
+//	}
 	
+	/*void removeSequal()
+	 *Accesses the database to remove the sequal from the entertainment
+	 */
 	public void removeSequal()
 	{
 		Statement statement;
@@ -783,58 +957,73 @@ public class Entertainment
 		}
 	}
 	
-	public void changePlatform(String platform)
+	/*void changePlatform(String platform)
+	 * Accesses the database to change the platform of the entertainment
+	 */
+	public String changePlatform(String platform)
 	{
-		Statement statement;
+		PreparedStatement statement;
 		
 		connection = connect.connect();
 		try
 		{
-			statement = connection.createStatement();
+			statement = connection.prepareStatement("UPDATE Entertainment SET platform = ? WHERE eid = " + eid);
+			statement.clearParameters();
+			statement.setString(1, platform);
 			
-			statement.executeUpdate("UPDATE Entertainment SET platform = '" + platform + "' WHERE eid = " + eid);
+			statement.executeUpdate();
 			
 			this.platform = platform;
 			
 	        statement.close();
 			connect.disconnect(connection);
+			return "Successfully updated platform.";
 		}
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
-			
+			return "Failed to updated platform.";
 		}
 	}
 	
-	public void changeVersionNum(String versionNum)
+	/*void changeVersionNum(String versionNum)
+	 * Accesses the database to change the versionNum of the entertainment
+	 */
+	public String changeVersionNum(String versionNum)
 	{
-		Statement statement;
+		PreparedStatement statement;
 		
 		connection = connect.connect();
 		try
 		{
-			statement = connection.createStatement();
+			statement = connection.prepareStatement("UPDATE Entertainment SET version = ? WHERE eid = " + eid);
+			statement.clearParameters();
+			statement.setString(1, versionNum);
 			
-			statement.executeUpdate("UPDATE Entertainment SET version = '" + versionNum + "' WHERE eid = " + eid);
+			statement.executeUpdate();
 			
 			this.versionNum = versionNum;
 			
 	        statement.close();
 			connect.disconnect(connection);
+			return "Successfully updated version.";
 		}
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
-			
+			return "Failed to updated version.";
 		}
 	}
 	
-	public DefaultTableModel searchBy(String searchTerm, String searchBy, String userEmail, boolean awardWinners)
+	/*ArrayList<Entertainment> searchBy(String searchTerm, String searchBy, String userEmail)
+	 * Accesses the database to search all entertainments listed for a specific searchTerm under
+	 * a specific clause. Creates an ArrayList of Entertainment objects as the result. Passes
+	 * the userEmail for some of the searches
+	 */
+	public DefaultTableModel searchBy(String searchTerm, String searchBy, String userEmail, boolean awardWinners, boolean gamesOnly, boolean moviesOnly)
 	{
-		ArrayList<Entertainment> list = new ArrayList<Entertainment>();
 		Statement statement;
 		ResultSet resultSet = null;
-		
 		
 		connection = connect.connect();
 		
@@ -842,134 +1031,53 @@ public class Entertainment
 		{
 			statement = connection.createStatement();
 			
-			if(searchTerm.equals("ALL")){
-				resultSet = statement.executeQuery("SELECT * FROM Entertainment");
-			}
-				//list = getArrayListOfAllItems();
-			else if(searchTerm.equals("MOVIES_ONLY"))
-			{
-				resultSet = statement.executeQuery("SELECT * FROM Entertainment E WHERE platform ='DVD' OR platform = 'BlueRay'");
-				
-//				while(resultSet.next())
-//				{
-//					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
-//							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
-//							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
-//				}
-			}
-			else if(searchTerm.equals("GAMES_ONLY"))
-			{
-				resultSet = statement.executeQuery("SELECT * FROM Entertainment E WHERE platform <>'DVD' AND platform <> 'BlueRay'");
-				
-//				while(resultSet.next())
-//				{
-//					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
-//							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
-//							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
-//				}
-			}
-			else if(searchTerm.equals("AWARDS_MOVIES"))
-			{
-				resultSet = statement.executeQuery("SELECT * FROM Entertainment E "
-						+ "WHERE awards_won > 0 AND platform ='DVD' OR platform = 'BlueRay'");
-				
-//				while(resultSet.next())
-//				{
-//					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
-//							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
-//							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
-//				}
-			}
-			else if(searchTerm.equals("AWARDS_GAMES"))
-			{
-				resultSet = statement.executeQuery("SELECT * FROM Entertainment E "
-						+ "WHERE awards_won > 0 AND platform <>'DVD' AND platform <> 'BlueRay'");
-				
-//				while(resultSet.next())
-//				{
-//					list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
-//							(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
-//							(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
-//				}
-			}
-			else if(searchTerm.equals("MOVIE_NO_CHECK"))
-			{
-				resultSet = statement.executeQuery("SELECT * FROM rent_history R "
-						+ "INNER JOIN Entertainment E ON R.eid = E.eid "
-						+ "INNER JOIN Users U ON R.user_email = U.user_email "
-						+ "WHERE R.user_email = '" + userEmail + "' AND E.platform = 'DVD' OR E.platform = 'BlueRay'");
-				
-//				while(resultSet.next())
-//				{
-//					list.add(new Entertainment((int)resultSet.getObject(6), (String)resultSet.getObject(7), (String)resultSet.getObject(8), 
-//							(String)resultSet.getObject(9), (int)resultSet.getObject(10), (String)resultSet.getObject(11), 
-//							(int)resultSet.getObject(12), (String)resultSet.getObject(13), (String)resultSet.getObject(14)));
-//				}
-			}
-			else if(searchTerm.equals("GAME_NO_CHECK"))
-			{
-				resultSet = statement.executeQuery("SELECT * FROM rent_history R "
-						+ "INNER JOIN Entertainment E ON R.eid = E.eid "
-						+ "INNER JOIN Users U ON R.user_email = U.user_email "
-						+ "WHERE R.user_email = '" + userEmail + "' AND E.platform <> 'DVD' AND E.platform <> 'BlueRay'");
-				
-//				while(resultSet.next())
-//				{
-//					list.add(new Entertainment((int)resultSet.getObject(6), (String)resultSet.getObject(7), (String)resultSet.getObject(8), 
-//							(String)resultSet.getObject(9), (int)resultSet.getObject(10), (String)resultSet.getObject(11), 
-//							(int)resultSet.getObject(12), (String)resultSet.getObject(13), (String)resultSet.getObject(14)));
-//				}
-			}
-			else if(searchBy.equals("ACTOR"))
+			String query = "SELECT eid AS 'ID', title AS 'Title', "
+					+ "release_date AS 'Release Date', genre AS 'Genre', "
+					+ "num_in_stock AS 'Stock', "
+					+ "sequal_id AS 'Sequel ID', platform AS 'Platform', version AS 'Version' ";
+			
+			if(searchBy.equals("ACTOR"))
 			{
 				System.out.println(searchTerm);
-				resultSet = statement.executeQuery("SELECT "
-						+ "E.eid, E.title, E.release_date, E.genre, E.num_in_stock, E.awards_won, E.sequal_id, E.platform, E.version "
-						+ "FROM worked_in W "
-						+ "INNER JOIN Entertainment E ON W.eid = E.eid "
-						+ "INNER JOIN Cast_Member C ON W.cid = C.cid "
-						+ "WHERE C.name LIKE '" + searchTerm + "'");
-				
-//				while(resultSet.next())
-//				{
-//					list.add(new Entertainment((int)resultSet.getObject(3), (String)resultSet.getObject(4), (String)resultSet.getObject(5), 
-//							(String)resultSet.getObject(6), (int)resultSet.getObject(7), (String)resultSet.getObject(8), 
-//							(int)resultSet.getObject(9), (String)resultSet.getObject(10), (String)resultSet.getObject(11)));
-//				}
+				query = query + "FROM worked_in W "
+						+ "NATURAL JOIN Entertainment E "
+						+ "NATURAL JOIN Cast_Member C "
+						+ "WHERE C.name LIKE '%" + searchTerm + "%' ";
 			}
 			else if(searchBy.equals("DIRECTOR"))
 			{
 				System.out.println(searchTerm);
-				resultSet = statement.executeQuery("SELECT "
-						+ "E.eid, E.title, E.release_date, E.genre, E.num_in_stock, E.awards_won, E.sequal_id, E.platform, E.version "
-						+ "FROM worked_in W "
-						+ "INNER JOIN Entertainment E ON W.eid = E.eid "
-						+ "INNER JOIN Cast_Member C ON W.cid = C.cid "
-						+ "WHERE C.name LIKE '" + searchTerm + "' AND C.is_director = 1");
-				
-//				while(resultSet.next())
-//				{
-//					list.add(new Entertainment((int)resultSet.getObject(3), (String)resultSet.getObject(4), (String)resultSet.getObject(5), 
-//							(String)resultSet.getObject(6), (int)resultSet.getObject(7), (String)resultSet.getObject(8), 
-//							(int)resultSet.getObject(9), (String)resultSet.getObject(10), (String)resultSet.getObject(11)));
-//				}
+				query = query + "FROM worked_in W "
+						+ "NATURAL JOIN Entertainment E "
+						+ "NATURAL JOIN Cast_Member C "
+						+ "WHERE C.name LIKE '%" + searchTerm + "%' AND C.is_director = 1 ";
 			}
-
-			
 			else if (searchBy.equals("TITLE") || searchBy.equals("PLATFORM") || searchBy.equals("GENRE")){
-				if (awardWinners)
-					resultSet = statement.executeQuery("SELECT eid AS 'ID', title AS 'Title', "
-							+ "release_date AS 'Release Date', genre AS 'Genre', "
-							+ "num_in_stock AS 'Stock', awards_won AS 'Awards Won', "
-							+ "sequal_id AS 'Sequel ID', platform AS 'Platform', version AS 'Version' "
-							+ "FROM Entertainment E WHERE " + searchBy.toLowerCase() + " LIKE '" + searchTerm + "' AND E.awards_won > 0");
+				
+				if (userEmail != null)
+					query = query + "FROM entertainment E WHERE E.eid NOT IN ( "
+							+ "SELECT eid "
+							+ "FROM entertainment E natural join rent_history R "
+							+ "WHERE R.user_email = '" + userEmail + "') ";
 				else
-					resultSet = statement.executeQuery("SELECT eid AS 'ID', title AS 'Title', "
-							+ "release_date AS 'Release Date', genre AS 'Genre', "
-							+ "num_in_stock AS 'Stock', awards_won AS 'Awards Won', "
-							+ "sequal_id AS 'Sequel ID', platform AS 'Platform', version AS 'Version' "
-							+ "FROM Entertainment E WHERE " + searchBy.toLowerCase() + " LIKE '" + searchTerm + "'");
+					query = query + "FROM Entertainment E WHERE " + searchBy.toLowerCase() + " LIKE '%" + searchTerm + "%' ";
 			}
+			
+			if (awardWinners){
+				query = query + "AND E.eid IN ( "
+						+ "SELECT DISTINCT eid "
+						+ "FROM won) ";
+				
+				System.out.println("award winnersssss");
+			}
+				
+			
+			if (gamesOnly)
+				query = query + "AND (E.platform <> 'DVD' AND E.platform <> 'Blu-Ray') ";
+			else if (moviesOnly)
+				query = query + "AND (E.platform = 'DVD' OR E.platform = 'Blu-Ray') ";
+			
+			resultSet = statement.executeQuery(query);
 			
 			DefaultTableModel tableModel = TableModelUtil.buildTableModel(resultSet);
 			
@@ -986,6 +1094,9 @@ public class Entertainment
 		}
 	}
 	
+	/*ArrayList<Entertainment> getArrayListOfAllItems()
+	 * Accesses the database and gets a list of all entertainment objects
+	 */
 	public ArrayList<Entertainment> getArrayListOfAllItems()
 	{
 		Statement statement;
@@ -1001,9 +1112,9 @@ public class Entertainment
 	         
 			while ( resultSet.next() ) 
 	         {
-				list.add(new Entertainment((int)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(3), 
-						(String)resultSet.getObject(4), (int)resultSet.getObject(5), (String)resultSet.getObject(6), 
-						(int)resultSet.getObject(7), (String)resultSet.getObject(8), (String)resultSet.getObject(9)));
+				list.add(new Entertainment(resultSet.getInt("eid"), resultSet.getString("title"), 
+						resultSet.getString("release_date"), resultSet.getString("genre"), resultSet.getInt("num_in_stock"),  
+						resultSet.getInt("sequal_id"), resultSet.getString("platform"), resultSet.getString("version")));
 	         } 
 			
 	        statement.close();
@@ -1018,9 +1129,13 @@ public class Entertainment
 		}
 	}
 	
-	public void removeEntertainment()
+	/*void removeEntertainment()
+	 * Accesses the database and removes the entertainment
+	 */
+	public String removeEntertainment()
 	{
 		Statement statement;
+		
 		try
 		{
 			connection = connect.connect();
@@ -1028,6 +1143,121 @@ public class Entertainment
 			statement = connection.createStatement();
 			
 			statement.executeUpdate("DELETE FROM Entertainment WHERE eid =" + eid);
+			
+			statement.close();
+			connect.disconnect(connection);
+			return "Successfuly removed: " + this.title;
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			connect.disconnect(connection);
+			return "Failed to remove: " + this.title;
+		}
+	}
+	
+	/*ArrayList<CastMember> getCastMembers()
+	 * Accesses the database and gets a list of all castmembers
+	 * that worked on the entertainment
+	 */
+	public ArrayList<CastMember> getCastMembers()
+	{
+		ArrayList<CastMember> list = new ArrayList<CastMember>();
+		connection = connect.connect();
+		Statement statement;
+		String street;
+		String city;
+		String state;
+		int zip;
+		
+		try
+		{
+			statement = connection.createStatement();
+			
+			ResultSet resultSet = statement.executeQuery("SELECT * FROM Cast_Member C " + 
+					"INNER JOIN Address A ON C.aid = A.aid " + 
+					"INNER JOIN Worked_In W ON C.cid = W.cid WHERE W.eid = " + eid);
+			
+			while(resultSet.next())
+			{
+				street = resultSet.getString("street");
+				city = resultSet.getString("city");
+				state = resultSet.getString("state");
+				zip = resultSet.getInt("zip");
+				
+				list.add(new CastMember(resultSet.getInt("cid"), resultSet.getString("name"), street, city, state, zip,
+							resultSet.getBoolean("is_director")));
+			}
+			
+			resultSet.close();
+			statement.close();
+			connect.disconnect(connection);
+			
+			return list;
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			connect.disconnect(connection);
+			
+			return list;
+		}
+	}
+	
+	/*void addCastMembers(ArrayList<CastMember> cml)
+	 * Gets passed an ArrayList of CastMember objects.
+	 * Then accesses the database to add each CastMember
+	 * to the entertainment under Worked_In
+	 */
+	public String addCastMembers(ArrayList<CastMember> cml)
+	{
+		connection = connect.connect();
+		Statement statement;
+		int cid;
+		
+		try
+		{
+			statement = connection.createStatement();
+			
+			statement.executeUpdate("DELETE FROM Worked_In WHERE eid = " + eid);
+			
+			for(int i = 0; i < cml.size(); i++)
+			{
+				ResultSet resultSet = statement.executeQuery("SELECT * FROM Worked_In W WHERE W.cid = " + cml.get(i).getCID() + " AND W.eid = " + eid);
+				if (!resultSet.next()){
+					System.out.println("Adding cast to worked in.");
+					cid = cml.get(i).getCID();
+					statement.executeUpdate("INSERT INTO Worked_In VALUES(" + cid + "," + eid + ")");
+				}
+				resultSet.close();
+			}
+			
+			statement.close();
+			connect.disconnect(connection);
+			return "Successfully added cast members.";
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			connect.disconnect(connection);
+			return "Failed to add cast members.";
+		}
+	}
+	
+	/*void deleteAward(Award e)
+	 * Deletes an award from the database so it is no longer
+	 * connected to the entertainment
+	 */
+	public void deleteAward(Award a)
+	{
+		connection = connect.connect();
+		Statement statement;
+		
+		try
+		{
+			statement = connection.createStatement();
+			
+			statement.executeUpdate("DELETE FROM Won WHERE eid = " + eid + " AND awardID = " + a.getAwardID());
 			
 			statement.close();
 			connect.disconnect(connection);
@@ -1039,13 +1269,36 @@ public class Entertainment
 		}
 	}
 	
+	/*void deleteCastMember(CastMember cm)
+	 * Deletes a castmember from the database so it is no
+	 * longer connected to the entertainment
+	 */
+	public void deleteCastMember(CastMember cm)
+	{
+		connection = connect.connect();
+		Statement statement;
+		int cid = cm.getCID();
+		
+		try
+		{
+			System.out.println("INSIDE DELETE CASTMEMBER with " + cm.getName() + " CID " + cm.getCID() + " EID " + eid);
+			statement = connection.createStatement();
+			
+			statement.executeUpdate("DELETE FROM Worked_In WHERE cid = " + cid + " AND eid =" + eid);
+			
+			statement.close();
+			connect.disconnect(connection);
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			connect.disconnect(connection);
+		}
+	}
+
 	@Override
 	public String toString()
 	{
-		String outputString;
-		
-		outputString = "" + eid + " " + type + " " + title;
-		
-		return outputString;
+		return this.title;
 	}
 }

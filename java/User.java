@@ -1,14 +1,13 @@
 
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.regex.Pattern;
-
 import javax.swing.table.DefaultTableModel;
 
 public class User 
@@ -20,7 +19,11 @@ public class User
 	String email;
 	String name;
 	String phone;
-	String address;
+	String street;
+	String city;
+	String state;
+	int zip;
+	int subPlan;
 	
 	boolean admin;
 	
@@ -38,12 +41,15 @@ public class User
 		get(email);
 	}
 	
-	public User(String email, String name, String phone, String address, boolean admin)
+	public User(String email, String name, String phone, String street, String city, String state, int zip, boolean admin)
 	{
 		this.email = email;
 		this.name = name;
 		this.phone = phone;
-		this.address = address;
+		this.street = street;
+		this.city = city;
+		this.state = state;
+		this.zip = zip;
 		this.admin = admin;
 	}
 	
@@ -54,11 +60,12 @@ public class User
 	}
 	
 	//new user creating account
-	public User(String email, String password, String name, String phone, String address, boolean admin) throws LoginException
+	public User(String email, String password, String name, String phone, String street, String city, String state, int zip, boolean admin) throws LoginException
 	{
 		connect = new Connect();
-		if(!createUser(email, password, name, phone, address, admin))
+		if(createUser(email, password, name, phone, street, city, state, zip, admin) == null)
 		{
+			System.out.println("Failed to login");
 			throw new LoginException("User already exists");
 		}
 		else
@@ -66,7 +73,10 @@ public class User
 			this.email = email;
 			this.name = name;
 			this.phone = phone;
-			this.address = address;
+			this.street = street;
+			this.city = city;
+			this.state = state;
+			this.zip = zip;
 			this.admin = admin;
 		}
 	}
@@ -92,8 +102,10 @@ public class User
 	        	 this.email = (String)resultSet.getObject(1);
 	        	 name = (String)resultSet.getObject(2);
 	        	 phone = (String)resultSet.getObject(4);
-	        	 address = (String)resultSet.getObject(11) + "$" + (String)resultSet.getObject(10) + "$" + (String)resultSet.getObject(9) + "$" + (int)resultSet.getObject(12);
-	        
+	        	 street = (String)resultSet.getObject(11);
+	        	 city = (String)resultSet.getObject(10);
+	        	 state = (String)resultSet.getObject(9);
+	        	 zip = (int)resultSet.getObject(12);
 	        	 admin = (boolean)resultSet.getObject(6);
 	        	 
 		         resultSet.close();
@@ -117,29 +129,36 @@ public class User
 	}
 	public void login(String email, String pass) throws LoginException
 	{
-		Statement statement;
+		PreparedStatement statement;
 		
 		connection = connect.connect();
 		try
-		{
-			statement = connection.createStatement();
-			
-			ResultSet resultSet = statement.executeQuery("SELECT * "
+		{	
+			statement = connection.prepareStatement("SELECT * "
 					+ "FROM Users U "
-					+ "INNER JOIN Address A on U.aid = A.aid "
-					+ "WHERE user_email = '" + email + "' AND pass = '" + pass +"'");
+					+ "INNER JOIN Address A ON U.aid = A.aid "
+					+ "WHERE user_email = ?");
+
+	        statement.clearParameters();
+	        statement.setString(1, email);
+			ResultSet resultSet = statement.executeQuery();
 	         // process query results
+			
 	         
 	         if(resultSet.next())
 	         {
 	        	 this.email = (String)resultSet.getObject(1);
 	        	 name = (String)resultSet.getObject(2);
 	        	 phone = (String)resultSet.getObject(4);
-	        	 address = (String)resultSet.getObject(11) + "$" + (String)resultSet.getObject(10) + "$" + (String)resultSet.getObject(9) + "$" + (int)resultSet.getObject(12);
-	        
+	        	 street = (String)resultSet.getObject(11);
+	        	 city = (String)resultSet.getObject(10);
+	        	 state = (String)resultSet.getObject(9);
+	        	 zip = (int)resultSet.getObject(12);
 	        	 admin = (boolean)resultSet.getObject(6);
+	        	 subPlan = (int)resultSet.getObject(7);
 	        	 
-	        	 System.out.println("" + this.email + " " + name + " " + phone + " " + address);
+	        	 System.out.println("" + this.email + " " + name + " " + phone + " " + street + " " + city + " " + state + " " + zip);
+	        	 
 		         resultSet.close();
 		         statement.close();
 		         System.out.println("HELLO");
@@ -163,17 +182,11 @@ public class User
 		}
 	}
 	
-	public boolean createUser(String email, String password, String name, String phone, String address, boolean a)
+	public User createUser(String email, String password, String name, String phone, String street, String city, String state, int zip, boolean a)
 	{
 		Statement statement;
-		String[] addressSplit;
-		String street;
-		String city;
-		String state;
 		int aid = 0;
-		int zip;
-		
-		
+
 		try
 		{
 			connection = connect.connect();
@@ -185,23 +198,15 @@ public class User
 	         // process query results
 			if(resultSet.next())
 			{
+				System.out.println("User already exists");
 				resultSet.close();
 		        statement.close();
 				connect.disconnect(connection);
-				return false;
+				return null;
 			}
 			else
-			{
-				
-				addressSplit = address.split(Pattern.quote("$"));
-				
-				street = addressSplit[0];
-				city = addressSplit[1];
-				state = addressSplit[2];
-				zip = Integer.parseInt(addressSplit[3]);
-				
+			{	
 				statement = connection.createStatement();
-				
 				resultSet = statement.executeQuery("SELECT aid FROM Address "
 						+ "WHERE state = '" + state + "' AND city = '" + city + "' AND street = '" + street + "' AND zip = " + zip);
 				
@@ -209,21 +214,14 @@ public class User
 				{
 					aid = (int)resultSet.getObject(1);
 					
-					System.out.println("" + aid);
+					System.out.println("Address ID: " + aid);
 					
 					statement.executeUpdate("INSERT INTO Users VALUES"
 							+ "('" + email + "','" + name + "','" + password + "'," + phone + "," + aid +  "," + a + "," + 1 + ")");
 					
-					this.email = email;
-					this.name = name;
-					this.phone = phone;
-					this.address = address;
-					this.admin = a;
-					
 					resultSet.close();
 			        statement.close();
 					connect.disconnect(connection);
-					return true;
 				}
 				else
 				{
@@ -236,28 +234,33 @@ public class User
 					
 					aid = (int)resultSet.getObject(1);
 					
-					System.out.println("" + aid);
+					System.out.println("New Address ID: " + aid);
 					statement.executeUpdate("INSERT INTO Users VALUES"
 							+ "('" + email + "','" + name + "','" + password + "'," + phone + "," + aid +  "," + a + "," + 1 + ")");
-					
-					this.email = email;
-					this.name = name;
-					this.phone = phone;
-					this.address = address;
-					this.admin = a;
 					
 					resultSet.close();
 			        statement.close();
 					connect.disconnect(connection);
-					return true;
 				}
+				
+				this.street = street;
+				this.city = city;
+				this.state = state;
+				this.zip = zip;
+				this.email = email;
+				this.name = name;
+				this.phone = phone;
+				this.admin = a;
+				
+				return this;
 			}
 		}
 		catch(Exception e)
 		{
+			System.out.println("Create user catch all...");
 			connect.disconnect(connection);
 			e.printStackTrace();
-			return false;
+			return null;
 		}
 	}
 	
@@ -281,10 +284,53 @@ public class User
 		return admin;
 	}
 	
-	public String getAddress()
-	{
-		return address;
+	public String getStreet(){
+		return street;
 	}
+	
+	public String getCity(){
+		return city;
+	}
+	
+	public String getState(){
+		return state;
+	}
+	
+	public int getZip(){
+		return zip;
+	}
+	
+	public String getPass(){
+		Statement statement;
+		String pass = null;
+		
+		try
+		{
+			connection = connect.connect();
+			statement = connection.createStatement();
+			
+			ResultSet resultSet = statement.executeQuery("SELECT U.pass "
+					+ "FROM Users U "
+					+ "WHERE user_email = '" + email + "'");
+			
+	         // process query results
+			if(resultSet.next()){
+				pass = (String)resultSet.getObject(1);				
+			}
+
+			resultSet.close();
+	        statement.close();
+			connect.disconnect(connection);
+			return pass;
+		}
+		catch(Exception e)
+		{
+			connect.disconnect(connection);
+			e.printStackTrace();
+			return pass;
+		}
+	}
+	
 	
 	public int getUserLvl()
 	{
@@ -326,10 +372,119 @@ public class User
 	
 	public void printUserInfo()
 	{
-		System.out.println("email: " + email + " name: "+ name + " phone: " + phone + " address: " + address);
+		System.out.println("email: " + email + " name: "+ name + " phone: " + phone + " street: " + street + " city: " + city + " state: " + state + " zip: " + zip);
 	}
 	
-	public void changeName(String name)
+	/*void rent(Entertainment e)
+	 * Allows a user to rent a piece of entertainment
+	 * Will throw a RentException if the user cannot rent the
+	 * object for some reason
+	 */
+	public String rent(int eid) throws RentException
+	{
+		PreparedStatement statement;
+		long count;
+		int quota=0;
+		Entertainment e = null;
+		try {
+			e = new Entertainment(eid);
+		} catch (GetEntertainmentException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return "Could not find Entertainment with ID: " + eid;
+		}
+
+		Calendar calendar;
+		Date now;
+		Timestamp currentTimestamp;
+		
+		connection = connect.connect();
+		try
+		{
+			statement = connection.prepareStatement("SELECT total_quota FROM Sub_Plan WHERE level_id = ?");
+			statement.clearParameters();
+			System.out.println(this.subPlan);
+			statement.setInt(1, this.subPlan);
+			
+			ResultSet resultSet = statement.executeQuery();
+			
+			if(resultSet.next()){
+				quota = resultSet.getInt("total_quota");
+				System.out.println("Quote: " + quota);
+			}
+			else{
+				System.out.println("Failed to get quota.");
+			}
+				
+			statement = connection.prepareStatement("SELECT COUNT(*) AS numRented "
+					+ "FROM (SELECT * "
+					+ "FROM sys.Rent_History R "
+					+ "WHERE R.time_returned IS NULL AND R.user_email = ?) R2 "
+					+ "GROUP BY R2.user_email");
+			
+			statement.clearParameters();
+			statement.setString(1, this.email);
+			
+			resultSet = statement.executeQuery();
+					
+			if(resultSet.next())
+			{
+				count = resultSet.getLong("numRented");
+
+				if(count < quota)
+				{
+					calendar = Calendar.getInstance();
+					now = calendar.getTime();
+					currentTimestamp = new Timestamp(now.getTime());
+					
+					statement = connection.prepareStatement("INSERT INTO Rent_History VALUES(0,?,?,?,null)");
+					
+					statement.clearParameters();
+					statement.setInt(1, e.getEID());
+					statement.setString(2, this.email);
+					statement.setTimestamp(3, currentTimestamp);
+					
+					statement.executeUpdate();
+					
+					 e.removeOneFromStock();
+				}
+				else{
+					connect.disconnect(connection);
+					return "You've reached your maximun amount of rentals.";
+				}
+					
+			}
+			else
+			{
+				calendar = Calendar.getInstance();
+				now = calendar.getTime();
+				currentTimestamp = new Timestamp(now.getTime());
+				
+				statement = connection.prepareStatement("INSERT INTO Rent_History VALUES(0,?,?,?,null)");
+				
+				statement.clearParameters();
+				statement.setInt(1, e.getEID());
+				statement.setString(2, this.email);
+				statement.setTimestamp(3, currentTimestamp);
+				
+				statement.executeUpdate();
+				
+				e.removeOneFromStock();
+			}
+			
+			statement.close();
+			resultSet.close();
+			connect.disconnect(connection);
+			return e.title + " was rented.";
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			return "Failed to rent entertainment with ID: " + eid;
+		}
+	}	
+	
+	public boolean changeName(String name)
 	{
 		Statement statement;
 		
@@ -344,15 +499,16 @@ public class User
 			
 	        statement.close();
 			connect.disconnect(connection);
+			return true;
 		}
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
-			
+			return false;
 		}
 	}
 	
-	public void changeUserLvl(int userLvl)
+	public boolean changeUserLvl(int userLvl)
 	{
 		Statement statement;
 		
@@ -365,15 +521,16 @@ public class User
 
 	        statement.close();
 			connect.disconnect(connection);
+			return true;
 		}
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
-			
+			return false;
 		}
 	}
 	
-	public void changePassword(String pass)
+	public boolean changePassword(String pass)
 	{
 		Statement statement;
 		
@@ -386,15 +543,16 @@ public class User
 
 	        statement.close();
 			connect.disconnect(connection);
+			return true;
 		}
 		catch(Exception e)
 		{
 			connect.disconnect(connection);
-			
+			return false;
 		}
 	}
 	
-	public void changePhone(String phone)
+	public boolean changePhone(String phone)
 	{
 		Statement statement;
 		
@@ -409,22 +567,18 @@ public class User
 			
 	        statement.close();
 			connect.disconnect(connection);
+			return true;
 		}
 		catch(Exception e)
 		{
-			connect.disconnect(connection);
-			
+			connect.disconnect(connection);	
+			return false;
 		}
 	}
 	
-	public void changeAddress(String address)
+	public boolean changeAddress(String street, String city, String state, int zip)
 	{
-		String[] addressSplit;
-		String street;
-		String city;
-		String state;
 		int aid = 0;
-		int zip;
 		
 		Statement statement;
 		
@@ -432,13 +586,6 @@ public class User
 		
 		try
 		{
-			addressSplit = address.split(Pattern.quote("$"));
-			
-			street = addressSplit[0];
-			city = addressSplit[1];
-			state = addressSplit[2];
-			zip = Integer.parseInt(addressSplit[3]);
-			
 			System.out.println(street + " " + city + " " + state + " " + zip);
 			statement = connection.createStatement();
 			
@@ -450,11 +597,15 @@ public class User
 				aid = (int)resultSet.getObject(1);
 				
 				statement.executeUpdate("UPDATE Users SET aid = " + aid + " WHERE user_email = '" + email + "'");
-				this.address = address;
+				this.street = street;
+				this.city = city;
+				this.state = state;
+				this.zip = zip;
 				
 				resultSet.close();
 		        statement.close();
 				connect.disconnect(connection);
+				return true;
 			}
 			else
 			{
@@ -468,19 +619,24 @@ public class User
 				aid = (int)resultSet.getObject(1);
 				
 				System.out.println("" + aid);
-				statement.executeUpdate("UPDATE Users SET aid = " + aid + "WHERE user_email = '" + email + "'");
+				statement.executeUpdate("UPDATE Users SET aid = " + aid + " WHERE user_email = '" + email + "'");
 				
-				this.address = address;
+				this.street = street;
+				this.city = city;
+				this.state = state;
+				this.zip = zip;
 				
 				resultSet.close();
 		        statement.close();
 				connect.disconnect(connection);
+				return true;
 			}
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 			connect.disconnect(connection);
+			return false;
 		}
 	}
 	
@@ -505,49 +661,37 @@ public class User
 		}
 	}
 	
-	public ArrayList<User> getArrayListOfAllItems()
+	static public DefaultTableModel getArrayListOfAllItems()
 	{
-		ArrayList<User> list = new ArrayList<User>();
-		String address;
 		Statement statement;
-		boolean a;
-		
-		connection = connect.connect();
+		Connect connect = new Connect();
+		Connection connection = connect.connect();
 		
 		try
 		{
 			statement = connection.createStatement();
 			
-			ResultSet resultSet = statement.executeQuery("SELECT *" + 
+			ResultSet resultSet = statement.executeQuery("SELECT U.user_email AS 'Email', U.name AS 'Name', U.phone AS 'Phone', A.street AS 'Street',"
+					+ "A.city AS 'City', A.state AS 'State', A.zip AS 'Zip' " + 
 										 "FROM Users U " + 
 										 "INNER JOIN Address A on U.aid = A.aid");
-			while(resultSet.next())
-			{
-				address = (String)resultSet.getObject(11) + "$" + (String)resultSet.getObject(10) + "$" + 
-						(String)resultSet.getObject(9) + "$" + (String)resultSet.getObject(12);
-				
-				if((int)resultSet.getObject(6) == 0)
-					a = false;
-				else
-					a = true;
-				
-				list.add(new User((String)resultSet.getObject(1), (String)resultSet.getObject(2), (String)resultSet.getObject(4), address, a));
-			}
+			
+			DefaultTableModel tableModel = TableModelUtil.buildTableModel(resultSet);
 			
 			resultSet.close();
 			statement.close();
 			connect.disconnect(connection);
-			return list;
+			return tableModel;
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 			connect.disconnect(connection);
-			return list;
+			return null;
 		}
 	}
 	
-	public void removeUser()
+	public String removeUser()
 	{
 		Statement statement;
 		try
@@ -560,11 +704,13 @@ public class User
 			
 			statement.close();
 			connect.disconnect(connection);
+			return "Succesfully removed user: " + this.email;
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 			connect.disconnect(connection);
+			return "Failed to remove user: " + this.email;
 		}
 	}
 	
@@ -645,12 +791,10 @@ public class User
 	
 	public DefaultTableModel adminGetLast24Hours()
 	{
-		ArrayList<RentHistory> list = new ArrayList<RentHistory>();
 		Statement statement;
 		Calendar calendar;
 		Date yesterday;
 		Timestamp oneDayAgo;
-//		Timestamp rentDate;
 		
 		calendar = Calendar.getInstance();
 		calendar.add(Calendar.DATE, -1);
@@ -669,17 +813,6 @@ public class User
 					+ "FROM rent_history R NATURAL JOIN entertainment E NATURAL JOIN users U NATURAL JOIN address A "
 					+ "WHERE R.time_rented > '" + oneDayAgo + "'");
 			
-//			while(resultSet.next())
-//			{
-//				rentDate = (Timestamp)resultSet.getObject(4);
-//				
-//				System.out.println("INSIDE GETTING LAST 24");
-//				
-//				System.out.println((String)resultSet.getObject(3));
-//				
-//				list.add(new RentHistory((int)resultSet.getObject(2), (int)resultSet.getObject(1), (String)resultSet.getObject(7),
-//						(String)resultSet.getObject(3), rentDate));
-//			}
 			DefaultTableModel tableModel = TableModelUtil.buildTableModel(resultSet);
 			resultSet.close();
 			statement.close();
@@ -696,7 +829,6 @@ public class User
 	
 	public DefaultTableModel adminGetTop10LastMonth()
 	{
-		ArrayList<RentHistory> list = new ArrayList<RentHistory>();
 		Statement statement;
 		Calendar calendar1;
 		Calendar calendar2;
@@ -718,9 +850,6 @@ public class User
 		
 		System.out.println("LastMonth: " + lastMonth.toString() + " ThisMonth: " + startThisMonth.toString());
 
-		long lowestCount = 999999999;
-		int pos;
-		int i;
 		connection = connect.connect();
 		
 		try
@@ -728,32 +857,12 @@ public class User
 			statement = connection.createStatement();
 			
 			ResultSet resultSet = statement.executeQuery("SELECT T.eid AS 'ID', T.title AS 'Title', T.count AS 'Num Rentals' "
-					+ "FROM (SELECT E.eid, E.title, R.rid, COUNT(R.eid) AS 'count' "
+					+ "FROM (SELECT E.eid, E.title, COUNT(R.eid) AS 'count' "
 					+ "FROM rent_history R NATURAL JOIN entertainment E "
 					+ "WHERE R.time_rented > '" + lastMonth + "' AND R.time_rented < '" + startThisMonth + "' "
-					+ "GROUP BY E.title) T "
-					+ "ORDER BY T.count DESC LIMIT 5");
-			
-//			while(resultSet.next())
-//			{				
-//				list.add(new RentHistory((int)resultSet.getObject(1), (String)resultSet.getObject(2), 
-//						(int)resultSet.getObject(3), (long)resultSet.getObject(4)));
-//			}
-//			
-//			while(list.size() > 10)
-//			{
-//				for(i = 0; i < list.size(); i++)
-//				{
-//					if(list.get(i).getCount() < lowestCount)
-//					{
-//						lowestCount = list.get(i).getCount();
-//						pos = i;
-//					}
-//				}
-//					
-//				list.remove(i);
-//			}
-//			
+					+ "GROUP BY E.eid) T "
+					+ "ORDER BY T.count DESC LIMIT 10");
+					
 			DefaultTableModel tableModel = TableModelUtil.buildTableModel(resultSet);
 			resultSet.close();
 			statement.close();

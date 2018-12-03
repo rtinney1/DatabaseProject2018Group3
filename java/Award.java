@@ -9,12 +9,12 @@
  * the database
  */
 
-package application;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 public class Award
 {
@@ -39,6 +39,10 @@ public class Award
 		this.name = name;
 	}
 	
+	public Award() {
+		// TODO Auto-generated constructor stub
+	}
+
 	/*String getName()
 	 * Returns the name of the award
 	 */
@@ -132,6 +136,38 @@ public class Award
 		{
 			e.printStackTrace();
 			connect.disconnect(connection);
+		}
+	}
+	
+	public static ArrayList<Award> getAllAwards(){
+		ArrayList<Award> awardArray = new ArrayList<>();
+		Connect connect = new Connect();
+		Connection connection = connect.connect();
+		PreparedStatement statement;
+		
+		try
+		{
+			statement = connection.prepareStatement("SELECT * FROM Awards");
+			
+			ResultSet resultSet = statement.executeQuery();
+			
+			while (resultSet.next())
+			{
+				int awardId = resultSet.getInt("awardID");
+				String name = resultSet.getString("title");
+				Award tempAward = new Award();
+				tempAward.awardID = awardId;
+				tempAward.name = name;
+				awardArray.add(tempAward);
+			}
+			
+			return awardArray;
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			connect.disconnect(connection);
+			return null;
 		}
 	}
 	
