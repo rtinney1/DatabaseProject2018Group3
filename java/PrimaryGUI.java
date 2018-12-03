@@ -72,6 +72,13 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 		tk = Toolkit.getDefaultToolkit();
 		d = tk.getScreenSize();
 		
+		adminMenu.setMnemonic(KeyEvent.VK_A);
+		adminMenu.setToolTipText("Admin. operations");
+		adminMenu.add(newItem("Edit User", "EUSER", this, KeyEvent.VK_U, KeyEvent.VK_U, "Access and edit a users information."));
+		adminMenu.add(newItem("Add Invetory", "INVENTORY", this, KeyEvent.VK_I, KeyEvent.VK_I, "Add a new movie or game to the inventory."));
+		adminMenu.add(newItem("24 Hour Recap", "ADMIN_GET_24", this, KeyEvent.VK_H, KeyEvent.VK_H, "See movies rented in the last 24 hours."));
+		adminMenu.add(newItem("Top 10", "ADMIN_GET_TOP_10", this, KeyEvent.VK_T, KeyEvent.VK_T, "See to 10 rented items."));
+		
 		adminSouthPanel = new JPanel();
 		memberTopPanel = new JPanel(new GridLayout(4, 1));
 		memberDataPanel = new JPanel(new GridLayout(2, 1));
@@ -507,7 +514,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 		
 		if (!adminStatus) //set up GUI for non-admin user
 		{
-			//rentButton.setEnabled(true);
+			rentButton.setVisible(true);
 			srButtonPanel.add(logoutButton);
 			srButtonPanel.add(Box.createRigidArea(new Dimension(140,0)));
 			srButtonPanel.add(rentButton);
@@ -579,13 +586,6 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 			menuBar.add(subMenu);
 			
 			//-----------------------------------------------
-			
-			adminMenu.setMnemonic(KeyEvent.VK_A);
-			adminMenu.setToolTipText("Admin. operations");
-			adminMenu.add(newItem("Edit User", "EUSER", this, KeyEvent.VK_U, KeyEvent.VK_U, "Access and edit a users information."));
-			adminMenu.add(newItem("Add Invetory", "INVENTORY", this, KeyEvent.VK_I, KeyEvent.VK_I, "Add a new movie or game to the inventory."));
-			adminMenu.add(newItem("24 Hour Recap", "ADMIN_GET_24", this, KeyEvent.VK_H, KeyEvent.VK_H, "See movies rented in the last 24 hours."));
-			adminMenu.add(newItem("Top 10", "ADMIN_GET_TOP_10", this, KeyEvent.VK_T, KeyEvent.VK_T, "See to 10 rented items."));
 
 			if (adminStatus)
 			{
