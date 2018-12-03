@@ -2,6 +2,7 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
@@ -393,7 +394,15 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 			JScrollPane scrollPane = new JScrollPane(rentHistoryTable);
 			scrollPane.setPreferredSize(new Dimension(600, 200));
 			
-			JOptionPane.showMessageDialog(this, scrollPane, "Top 10 Items of the Month", JOptionPane.INFORMATION_MESSAGE);
+			String[] monthName = {"January", "February",
+	                "March", "April", "May", "June", "July",
+	                "August", "September", "October", "November",
+	                "December"};
+			
+			Calendar cal = Calendar.getInstance();
+	        String month = monthName[cal.get(Calendar.MONTH)-1];
+			
+			JOptionPane.showMessageDialog(this, scrollPane, "Top 10 Items of " + month, JOptionPane.INFORMATION_MESSAGE);
 		}
 		
 		else if (e.getActionCommand().equals("RENT")){

@@ -830,13 +830,13 @@ public class Entertainment
 			
 	        statement.close();
 			connect.disconnect(connection);
-			return "Successfully added awards.";
+			return "Successfully updated awards.";
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 			connect.disconnect(connection);
-			return "Failed to add awards.";
+			return "Failed to update awards.";
 		}
 	}
 	
@@ -1234,13 +1234,13 @@ public class Entertainment
 			
 			statement.close();
 			connect.disconnect(connection);
-			return "Successfully added cast members.";
+			return "Successfully updated cast members.";
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
 			connect.disconnect(connection);
-			return "Failed to add cast members.";
+			return "Failed to update cast members.";
 		}
 	}
 	
