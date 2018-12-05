@@ -393,45 +393,69 @@ public class User
 			e1.printStackTrace();
 			return "Could not find Entertainment with ID: " + eid;
 		}
-
-		Calendar calendar;
-		Date now;
-		Timestamp currentTimestamp;
 		
-		connection = connect.connect();
-		try
-		{
-			statement = connection.prepareStatement("SELECT total_quota FROM Sub_Plan WHERE level_id = ?");
-			statement.clearParameters();
-			System.out.println(this.subPlan);
-			statement.setInt(1, this.subPlan);
+		if (e.getNumInStock() > 0){
+			Calendar calendar;
+			Date now;
+			Timestamp currentTimestamp;
 			
-			ResultSet resultSet = statement.executeQuery();
-			
-			if(resultSet.next()){
-				quota = resultSet.getInt("total_quota");
-				System.out.println("Quote: " + quota);
-			}
-			else{
-				System.out.println("Failed to get quota.");
-			}
-				
-			statement = connection.prepareStatement("SELECT COUNT(*) AS numRented "
-					+ "FROM (SELECT * "
-					+ "FROM sys.Rent_History R "
-					+ "WHERE R.time_returned IS NULL AND R.user_email = ?) R2 "
-					+ "GROUP BY R2.user_email");
-			
-			statement.clearParameters();
-			statement.setString(1, this.email);
-			
-			resultSet = statement.executeQuery();
-					
-			if(resultSet.next())
+			connection = connect.connect();
+			try
 			{
-				count = resultSet.getLong("numRented");
-
-				if(count < quota)
+				statement = connection.prepareStatement("SELECT total_quota FROM Sub_Plan WHERE level_id = ?");
+				statement.clearParameters();
+				System.out.println(this.subPlan);
+				statement.setInt(1, this.subPlan);
+				
+				ResultSet resultSet = statement.executeQuery();
+				
+				if(resultSet.next()){
+					quota = resultSet.getInt("total_quota");
+					System.out.println("Quote: " + quota);
+				}
+				else{
+					System.out.println("Failed to get quota.");
+				}
+					
+				statement = connection.prepareStatement("SELECT COUNT(*) AS numRented "
+						+ "FROM (SELECT * "
+						+ "FROM sys.Rent_History R "
+						+ "WHERE R.time_returned IS NULL AND R.user_email = ?) R2 "
+						+ "GROUP BY R2.user_email");
+				
+				statement.clearParameters();
+				statement.setString(1, this.email);
+				
+				resultSet = statement.executeQuery();
+						
+				if(resultSet.next())
+				{
+					count = resultSet.getLong("numRented");
+					System.out.println("Count: " + count);
+					if(count < quota)
+					{
+						calendar = Calendar.getInstance();
+						now = calendar.getTime();
+						currentTimestamp = new Timestamp(now.getTime());
+						
+						statement = connection.prepareStatement("INSERT INTO Rent_History VALUES(0,?,?,?,null)");
+						
+						statement.clearParameters();
+						statement.setInt(1, e.getEID());
+						statement.setString(2, this.email);
+						statement.setTimestamp(3, currentTimestamp);
+						
+						statement.executeUpdate();
+						
+						 e.removeOneFromStock();
+					}
+					else{
+						connect.disconnect(connection);
+						return "You've reached your maximun amount of rentals.";
+					}
+						
+				}
+				else
 				{
 					calendar = Calendar.getInstance();
 					now = calendar.getTime();
@@ -446,41 +470,23 @@ public class User
 					
 					statement.executeUpdate();
 					
-					 e.removeOneFromStock();
+					e.removeOneFromStock();
 				}
-				else{
-					connect.disconnect(connection);
-					return "You've reached your maximun amount of rentals.";
-				}
-					
+				
+				statement.close();
+				resultSet.close();
+				connect.disconnect(connection);
+				return e.title + " was rented.";
 			}
-			else
+			catch(Exception ex)
 			{
-				calendar = Calendar.getInstance();
-				now = calendar.getTime();
-				currentTimestamp = new Timestamp(now.getTime());
-				
-				statement = connection.prepareStatement("INSERT INTO Rent_History VALUES(0,?,?,?,null)");
-				
-				statement.clearParameters();
-				statement.setInt(1, e.getEID());
-				statement.setString(2, this.email);
-				statement.setTimestamp(3, currentTimestamp);
-				
-				statement.executeUpdate();
-				
-				e.removeOneFromStock();
+				ex.printStackTrace();
+				return "Failed to rent entertainment with ID: " + eid;
 			}
-			
-			statement.close();
-			resultSet.close();
-			connect.disconnect(connection);
-			return e.title + " was rented.";
 		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			return "Failed to rent entertainment with ID: " + eid;
+		
+		else{
+			return e.getTitle() + " is out of stock.";
 		}
 	}	
 	

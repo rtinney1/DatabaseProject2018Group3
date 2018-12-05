@@ -142,8 +142,8 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 		updateButton.setActionCommand("UPDATE");
 		updateButton.setEnabled(false);
 		
-		sequalButton = new JButton("Get Sequals");
-		sequalButton.setActionCommand("SEQUALS");
+		sequalButton = new JButton("Get Sequels");
+		sequalButton.setActionCommand("SEQUELS");
 		sequalButton.addActionListener(this);
 		sequalButton.setEnabled(false);
 		
@@ -156,7 +156,7 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 		passLabel = new JLabel("Password:");
 		searchLabel = new JLabel("Search: ");
 		
-		sequalLabel = new JLabel("Sequal: ");
+		sequalLabel = new JLabel("Sequel: ");
 		castLabel = new JLabel("Cast: ");
 		directorLabel = new JLabel("Director: ");
 		awardsLabel = new JLabel("Awards: ");
@@ -321,12 +321,16 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 			search();
 		}
 		
-		else if (e.getActionCommand().equals("SEQUALS")){
+		else if (e.getActionCommand().equals("SEQUELS")){
 			sequalButton.setEnabled(false);
 			rentButton.setEnabled(false);
 			removeButton.setEnabled(false);
 			updateButton.setEnabled(false);
 			infoButton.setEnabled(false);
+			sequalLabel.setText("Sequel: ");
+			castLabel.setText("Cast: ");
+			directorLabel.setText("Director: ");
+			awardsLabel.setText("Awards: ");
 			String eid = dataTable.getValueAt(dataTable.getSelectedRow(), 0).toString();
 			System.out.println("Find sequals with this EID: " + eid);
 			
@@ -468,9 +472,9 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 						Entertainment entertainment = new Entertainment(eid);
 						String sequalTitle = entertainment.getSequal().getTitle();
 						if (sequalTitle != null)
-							sequalLabel.setText("Sequal: " + entertainment.getSequal().getTitle());
+							sequalLabel.setText("Sequel: " + entertainment.getSequal().getTitle());
 						else
-							sequalLabel.setText("Sequal: ");
+							sequalLabel.setText("Sequel: ");
 						sequalLabel.repaint();
 						sequalLabel.revalidate();
 						
@@ -659,6 +663,10 @@ class MainGUI extends JFrame implements ActionListener, ListSelectionListener, M
 		rentButton.setEnabled(false);
 		removeButton.setEnabled(false);
 		updateButton.setEnabled(false);
+		sequalLabel.setText("Sequel: ");
+		castLabel.setText("Cast: ");
+		directorLabel.setText("Director: ");
+		awardsLabel.setText("Awards: ");
 		String searchTerm = searchField.getText().trim();
 		String searchBy = comboBox.getSelectedItem().toString().toUpperCase();
 		if (searchTerm.length() == 0){
